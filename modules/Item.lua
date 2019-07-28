@@ -92,6 +92,13 @@ function module:GetOptions()
 			type = 'group',
 			name = 'Item',
 			args = {
+				info = {
+					type = "header",
+					name = "You can drag & drop items here!",
+					hidden = true,
+					dialogHidden = false,
+					order = 0
+				},
 				add = {
 					type = 'input',
 					name = 'Add',
@@ -100,6 +107,7 @@ function module:GetOptions()
 						module:AddBroker(BrokerAnything:GetId(value))
 					end,
 					get = false,
+					order = 1
 				},
 				remove = {
 					type = 'select',
@@ -112,7 +120,8 @@ function module:GetOptions()
 					get = function(info) end,
 					values = function()
 						return module.db.profile.ids
-					end
+					end,
+					order = 2
 				}
 			}
 		},
