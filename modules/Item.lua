@@ -109,7 +109,7 @@ function module:GetOptions()
 						module.db.profile.ids[value] = nil
 						print("Reload UI to take effect!")
 					end,
-					get = false,
+					get = function(info) end,
 					values = function()
 						return module.db.profile.ids
 					end

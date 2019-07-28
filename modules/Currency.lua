@@ -30,7 +30,7 @@ function module:OnEnable()
 	self.db = BrokerAnything.db:RegisterNamespace("CurrencyModule", defaults)
 
 	for k, v in pairs(self.db.profile.ids) do
-		if(v) then module:AddBroker(k) end
+		if (v) then module:AddBroker(k) end
 	end
 
 	self:RegisterEvent("CURRENCY_DISPLAY_UPDATE", updateAll)
@@ -98,7 +98,7 @@ function module:GetOptions()
 						module.db.profile.ids[value] = nil
 						print("Reload UI to take effect!")
 					end,
-					get = false,
+					get = function(info) end,
 					values = function()
 						local values = {}
 
