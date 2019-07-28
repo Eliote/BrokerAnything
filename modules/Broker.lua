@@ -13,8 +13,20 @@ local LDBIcon = LibStub("LibDBIcon-1.0")
 
 function broker.OnTooltipShow(tip)
 	tip:AddLine(Colors.WHITE .. ADDON_NAME)
-	tip:AddLine(" ")
 	tip:AddLine(Colors.YELLOW .. "Click to open the UI")
+
+	for _, baModule in BrokerAnything:IterateModules() do
+		if (baModule.brokers) then
+			tip:AddLine(" ")
+			tip:AddLine(baModule.brokerTitle or "")
+			for id, brokerTable in pairs(baModule.brokers) do
+				if(brokerTable.broker.type == "data source") then
+					tip:AddDoubleLine(brokerTable.broker.name or id, brokerTable.broker.text)
+					tip:AddTexture(brokerTable.broker.icon)
+				end
+			end
+		end
+	end
 end
 
 function broker.OnClick(self, button)

@@ -5,6 +5,8 @@ local module = BrokerAnything:NewModule("CurrencyModule", "AceEvent-3.0")
 local Colors = BrokerAnything.Colors
 
 local brokers = {}
+module.brokers = brokers
+module.brokerTitle = "Currency"
 
 local function updateBroker(brokerTable)
 	local _, currencyAmount = GetCurrencyInfo(brokerTable.id)
@@ -15,7 +17,7 @@ local function updateBroker(brokerTable)
 end
 
 local function updateAll()
-	for _, v in ipairs(brokers) do
+	for _, v in pairs(brokers) do
 		updateBroker(v)
 	end
 end
@@ -37,10 +39,19 @@ function module:OnEnable()
 end
 
 function module:AddBroker(currencyId)
+	if (not tonumber(currencyId)) then
+		print("Not a valid ID! (" .. currencyId .. ")")
+		return
+	end
+	if (brokers[currencyId]) then
+		print("Already added! (" .. currencyId .. ")")
+		return
+	end
+
 	local currencyName, currencyAmount, icon, _, _, maximumValue = GetCurrencyInfo(currencyId)
 
 	if (currencyName == nil or currencyName == '') then
-		error("Not a currency! (" .. currencyId .. ")", 2)
+		print("Not a currency! (" .. currencyId .. ")")
 		return
 	end
 
@@ -49,10 +60,12 @@ function module:AddBroker(currencyId)
 		sessionStart = currencyAmount
 	}
 
-	brokerTable.broker = LibStub("LibDataBroker-1.1"):NewDataObject("BrokerAnything_" .. currencyId, {
+	local brokerName = "BrokerAnything_Currency_" .. currencyId
+	brokerTable.broker = LibStub("LibDataBroker-1.1"):NewDataObject(brokerName, {
 		type = "data source",
 		icon = icon or "Interface\\Icons\\INV_Misc_QuestionMark",
 		label = "BA (currency) - " .. currencyName or currencyId,
+		name = Colors.WHITE .. (currencyName or currencyId) .. "|r",
 		OnTooltipShow = function(tooltip)
 			tooltip:SetText(Colors.WHITE .. currencyName)
 			tooltip:AddLine(" ");
@@ -69,7 +82,12 @@ function module:AddBroker(currencyId)
 		OnClick = function() end
 	})
 
-	table.insert(brokers, brokerTable)
+	if (not brokerTable.broker) then
+		brokerTable.broker = LibStub("LibDataBroker-1.1"):GetDataObjectByName(brokerName)
+		print("Using the existing data broker: " .. brokerName)
+	end
+
+	brokers[currencyId] = brokerTable
 	module.db.profile.ids[currencyId] = true
 
 	updateBroker(brokerTable)
@@ -104,6 +122,9 @@ function module:GetOptions()
 					width = 'full',
 					set = function(info, value)
 						module.db.profile.ids[value] = nil
+						brokers[value].broker.value = nil
+						brokers[value].broker.text = "Reload UI!"
+						brokers[value] = nil
 						print("Reload UI to take effect!")
 					end,
 					get = function(info) end,

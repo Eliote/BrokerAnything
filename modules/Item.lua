@@ -5,6 +5,8 @@ local module = BrokerAnything:NewModule("ItemModule", "AceEvent-3.0")
 local Colors = BrokerAnything.Colors
 
 local brokers = {}
+module.brokers = brokers
+module.brokerTitle = "Item"
 
 local function updateBroker(brokerTable)
 	local itemCount = GetItemCount(brokerTable.id, true)
@@ -16,7 +18,7 @@ local function updateBroker(brokerTable)
 end
 
 local function updateAll()
-	for _, v in ipairs(brokers) do
+	for _, v in pairs(brokers) do
 		updateBroker(v)
 	end
 end
@@ -42,6 +44,15 @@ function module:BAG_UPDATE()
 end
 
 function module:AddBroker(itemID)
+	if (not tonumber(itemID)) then
+		print("Not a valid ID! (" .. itemID .. ")")
+		return
+	end
+	if (brokers[itemID]) then
+		print("Already added! (" .. itemID .. ")")
+		return
+	end
+
 	local item = Item:CreateFromItemID(tonumber(itemID))
 	item:ContinueOnItemLoad(function()
 		local brokerTable = {
@@ -55,10 +66,12 @@ function module:AddBroker(itemID)
 
 		local itemColor = ITEM_QUALITY_COLORS[itemRarity].hex
 
-		brokerTable.broker = LibStub("LibDataBroker-1.1"):NewDataObject("BrokerAnything_" .. itemID, {
+		local brokerName = "BrokerAnything_Item_" .. itemID
+		brokerTable.broker = LibStub("LibDataBroker-1.1"):NewDataObject(brokerName, {
 			type = "data source",
 			icon = itemIcon or "Interface\\Icons\\INV_Misc_QuestionMark",
 			label = "BA (item) - " .. itemName,
+			name = itemColor .. itemName .. "|r",
 			OnTooltipShow = function(tooltip)
 				tooltip:SetText(itemColor .. itemName .. "|r")
 				tooltip:AddLine(" ");
@@ -79,7 +92,12 @@ function module:AddBroker(itemID)
 			OnClick = function() end
 		})
 
-		table.insert(brokers, brokerTable)
+		if (not brokerTable.broker) then
+			brokerTable.broker = LibStub("LibDataBroker-1.1"):GetDataObjectByName(brokerName)
+			print("Using the existing data broker: " .. brokerName)
+		end
+
+		brokers[itemID] = brokerTable
 		module.db.profile.ids[itemID] = itemLink
 
 		updateBroker(brokerTable)
@@ -115,6 +133,9 @@ function module:GetOptions()
 					width = 'full',
 					set = function(info, value)
 						module.db.profile.ids[value] = nil
+						brokers[value].broker.value = nil
+						brokers[value].broker.text = "Reload UI!"
+						brokers[value] = nil
 						print("Reload UI to take effect!")
 					end,
 					get = function(info) end,
