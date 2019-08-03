@@ -45,6 +45,7 @@ function module:BAG_UPDATE()
 end
 
 function module:AddBroker(itemID)
+	if (not itemID) then return end
 	if (not tonumber(itemID)) then
 		print("Not a valid ID! (" .. itemID .. ")")
 		return
