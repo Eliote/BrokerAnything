@@ -134,9 +134,10 @@ function module:GetOptions()
 					values = function()
 						local values = {}
 
-						for k, v in pairs(module.db.profile.ids) do
-							local _, currencyAmount = GetCurrencyInfo(k)
-							values[k] = GetCurrencyLink(k, currencyAmount)
+						for id, _ in pairs(module.db.profile.ids) do
+							local _, currencyAmount, icon = GetCurrencyInfo(id)
+							local link = GetCurrencyLink(id, currencyAmount)
+							values[id] = ElioteUtils.getTexture(icon) .. link .. " |cFFAAAAAA(id:" .. id .. ")|r"
 						end
 
 						return values

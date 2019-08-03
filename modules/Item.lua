@@ -99,7 +99,10 @@ function module:AddBroker(itemID)
 		end
 
 		brokers[itemID] = brokerTable
-		module.db.profile.ids[itemID] = itemLink
+		module.db.profile.ids[itemID] = {
+			link = itemLink,
+			icon = itemIcon
+		}
 
 		updateBroker(brokerTable)
 	end)
@@ -141,7 +144,13 @@ function module:GetOptions()
 					end,
 					get = function(info) end,
 					values = function()
-						return module.db.profile.ids
+						local values = {}
+
+						for id, item in pairs(module.db.profile.ids) do
+							values[id] = ElioteUtils.getTexture(item.icon) .. item.link .. " |cFFAAAAAA(id:" .. id .. ")|r"
+						end
+
+						return values
 					end,
 					order = 2
 				}
