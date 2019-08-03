@@ -1,5 +1,6 @@
 local ADDON_NAME, _ = ...
 
+local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 local BrokerAnything = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
 local module = BrokerAnything:NewModule("BrokerAnythingBroker", "AceEvent-3.0")
 local Colors = BrokerAnything.Colors
@@ -13,7 +14,7 @@ local LDBIcon = LibStub("LibDBIcon-1.0")
 
 function broker.OnTooltipShow(tip)
 	tip:AddLine(Colors.WHITE .. ADDON_NAME)
-	tip:AddLine(Colors.YELLOW .. "Click to open the UI")
+	tip:AddLine(Colors.YELLOW .. L["Click to open the UI"])
 
 	for _, baModule in BrokerAnything:IterateModules() do
 		if (baModule.brokers) then
@@ -61,14 +62,14 @@ function module:GetOptions()
 	return {
 		showMinimap = {
 			type = "toggle",
-			name = "Show minimap button",
+			name = L["Show minimap button"],
 			width = "double",
 			set = function(info, val) module:SetMinimapVisibility(val) end,
 			get = function(info) return not module.db.profile.minimap.hide end
 		},
 		config = {
 			type = "execute",
-			name = "Show config UI",
+			name = L["Show config UI"],
 			func = function() LibStub("AceConfigDialog-3.0"):Open(ADDON_NAME) end,
 			hidden = true
 		}

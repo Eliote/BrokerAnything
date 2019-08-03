@@ -1,0 +1,102 @@
+-- The content of this file is AUTO-GENERATED
+-- You can update it at https://www.curseforge.com/wow/addons/brokeranything/localization
+local ADDON_NAME, _ = ...
+local AceLocale = LibStub("AceLocale-3.0")
+local L = AceLocale:NewLocale(ADDON_NAME, "enUS", true, true)
+
+-- Allow to use the L table as a function with substitution
+-- e.g. L("I'm ${age} years old!", {age = 29})
+do
+	local _L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
+	local LMetatable = getmetatable(_L)
+	local newMetatable = {
+		__index = LMetatable.__index,
+		__newindex = LMetatable.__newindex,
+		__call = function(self, locale, tab)
+			return (self[locale]:gsub('($%b{})', function(w) return tab[w:sub(3, -2)] or w end))
+		end
+	}
+	setmetatable(_L, newMetatable)
+end
+
+if L then
+	--@localization(locale="enUS", format="lua_additive_table", same-key-is-true=true)@
+
+	if GetLocale() == "enUS" or GetLocale() == "enGB" then
+		return
+	end
+end
+
+L = AceLocale:NewLocale(ADDON_NAME, "ptBR")
+if L then
+	--@localization(locale="ptBR", format="lua_additive_table")@
+	--@debug@
+	L["Click to open the UI"] = "Clique para abrir a interface"
+	L["Show minimap button"] = "Exibir botão no minimapa"
+	L["Show config UI"] = "Exibir interface de configuração"
+	L["Invalid ID! (${id})"] = "ID inválido! (${id})"
+	L["Already added! (${id})"] = "Já adicionado! (${id})"
+	L["No currency with id '${id}' found!"] = "Nenhuma moeda com id '${id}' encontrada!"
+	L["No item with id '${id}' found!"] = "Nenhum item com id '${id}' encontrado!"
+	L["Using the existing data broker: "] = "Utilizando o data broker existente: "
+	L["This session:"] = "Nesta sessão:"
+	L["Current:"] = "Atual:"
+	L["Maximum:"] = "Máximo:"
+	L["Currency"] = "Moeda"
+	L["You can drag & drop items here!"] = "Você pode arrastar e soltar itens aqui!"
+	L["Add"] = "Adicionar"
+	L["Remove"] = "Remover"
+	L["Reload UI!"] = "Recarregue a UI!"
+	L["Reload UI to take effect!"] = "Recarregue a interface para surtir efeito!"
+	L["BA (currency) - "] = "BA (moeda) - "
+	L["BA (item) - "] = "BA (item) - "
+	L["Item"] = "Item"
+	L["Bag:"] = "Bolsa:"
+	L["Bank:"] = "Banco:"
+	L["Total:"] = "Total:"
+	--@end-debug@
+
+	return
+end
+
+L = AceLocale:NewLocale(ADDON_NAME, "frFR")
+if L then
+	--@localization(locale="frFR", format="lua_additive_table")@
+	return
+end
+
+L = AceLocale:NewLocale(ADDON_NAME, "deDE")
+if L then
+	--@localization(locale="deDE", format="lua_additive_table")@
+	return
+end
+
+L = AceLocale:NewLocale(ADDON_NAME, "itIT")
+if L then
+	--@localization(locale="itIT", format="lua_additive_table")@
+	return
+end
+
+L = AceLocale:NewLocale(ADDON_NAME, "esES")
+if L then
+	--@localization(locale="esES", format="lua_additive_table")@
+	return
+end
+
+L = AceLocale:NewLocale(ADDON_NAME, "esMX")
+if L then
+	--@localization(locale="esMX", format="lua_additive_table")@
+	return
+end
+
+L = AceLocale:NewLocale(ADDON_NAME, "ruRU")
+if L then
+	--@localization(locale="ruRU", format="lua_additive_table")@
+	return
+end
+
+
+
+
+
+

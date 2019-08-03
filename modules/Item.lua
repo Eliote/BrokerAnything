@@ -1,5 +1,6 @@
 local ADDON_NAME, _ = ...
 
+local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 local BrokerAnything = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
 local module = BrokerAnything:NewModule("ItemModule", "AceEvent-3.0")
 local Colors = BrokerAnything.Colors
@@ -7,7 +8,7 @@ local ElioteUtils = LibStub("LibElioteUtils-1.0")
 
 local brokers = {}
 module.brokers = brokers
-module.brokerTitle = "Item"
+module.brokerTitle = L["Item"]
 
 local function updateBroker(brokerTable)
 	local itemCount = GetItemCount(brokerTable.id, true)
@@ -47,15 +48,19 @@ end
 function module:AddBroker(itemID)
 	if (not itemID) then return end
 	if (not tonumber(itemID)) then
-		print("Not a valid ID! (" .. itemID .. ")")
+		print(L("Invalid ID! (${id})", { id = itemID }))
 		return
 	end
 	if (brokers[itemID]) then
-		print("Already added! (" .. itemID .. ")")
+		print(L("Already added! (${id})", { id = itemID }))
 		return
 	end
 
 	local item = Item:CreateFromItemID(tonumber(itemID))
+	if (not item or item:IsItemEmpty()) then
+		print(L("No item with id '${id}' found!", { id = itemID }))
+		return
+	end
 	item:ContinueOnItemLoad(function()
 		local brokerTable = {
 			id = itemID,
@@ -72,7 +77,7 @@ function module:AddBroker(itemID)
 		brokerTable.broker = LibStub("LibDataBroker-1.1"):NewDataObject(brokerName, {
 			type = "data source",
 			icon = itemIcon or "Interface\\Icons\\INV_Misc_QuestionMark",
-			label = "BA (item) - " .. itemName,
+			label = L["BA (item) - "] .. itemName,
 			name = itemColor .. itemName .. "|r",
 			OnTooltipShow = function(tooltip)
 				tooltip:SetHyperlink(itemLink)
@@ -84,12 +89,12 @@ function module:AddBroker(itemID)
 				local total = GetItemCount(itemID, true)
 
 				tooltip:AddDoubleLine(
-						"This session:",
+						L["This session:"],
 						BrokerAnything:FormatBalance(total - brokerTable.sessionStart, true)
 				);
-				tooltip:AddDoubleLine("Bag:", Colors.WHITE .. bag);
-				tooltip:AddDoubleLine("Bank:", Colors.WHITE .. (total - bag));
-				tooltip:AddDoubleLine("Total:", Colors.WHITE .. total);
+				tooltip:AddDoubleLine(L["Bag:"], Colors.WHITE .. bag);
+				tooltip:AddDoubleLine(L["Bank:"], Colors.WHITE .. (total - bag));
+				tooltip:AddDoubleLine(L["Total:"], Colors.WHITE .. total);
 
 				tooltip:Show()
 			end,
@@ -98,7 +103,7 @@ function module:AddBroker(itemID)
 
 		if (not brokerTable.broker) then
 			brokerTable.broker = LibStub("LibDataBroker-1.1"):GetDataObjectByName(brokerName)
-			print("Using the existing data broker: " .. brokerName)
+			print(L["Using the existing data broker: "] .. brokerName)
 		end
 
 		brokers[itemID] = brokerTable
@@ -115,18 +120,18 @@ function module:GetOptions()
 	return {
 		item = {
 			type = 'group',
-			name = 'Item',
+			name = L["Item"],
 			args = {
 				info = {
 					type = "header",
-					name = "You can drag & drop items here!",
+					name = L["You can drag & drop items here!"] ,
 					hidden = true,
 					dialogHidden = false,
 					order = 0
 				},
 				add = {
 					type = 'input',
-					name = 'Add',
+					name = L["Add"],
 					width = 'full',
 					set = function(info, value)
 						module:AddBroker(ElioteUtils.getId(value))
@@ -136,14 +141,14 @@ function module:GetOptions()
 				},
 				remove = {
 					type = 'select',
-					name = 'Remove',
+					name = L["Remove"],
 					width = 'full',
 					set = function(info, value)
 						module.db.profile.ids[value] = nil
 						brokers[value].broker.value = nil
-						brokers[value].broker.text = "Reload UI!"
+						brokers[value].broker.text = L["Reload UI!"]
 						brokers[value] = nil
-						print("Reload UI to take effect!")
+						print(L["Reload UI to take effect!"])
 					end,
 					get = function(info) end,
 					values = function()

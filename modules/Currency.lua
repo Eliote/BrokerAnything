@@ -1,5 +1,6 @@
 local ADDON_NAME, _ = ...
 
+local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 local BrokerAnything = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
 local module = BrokerAnything:NewModule("CurrencyModule", "AceEvent-3.0")
 local Colors = BrokerAnything.Colors
@@ -7,7 +8,7 @@ local ElioteUtils = LibStub("LibElioteUtils-1.0")
 
 local brokers = {}
 module.brokers = brokers
-module.brokerTitle = "Currency"
+module.brokerTitle = L["Currency"]
 
 local function updateBroker(brokerTable)
 	local _, currencyAmount = GetCurrencyInfo(brokerTable.id)
@@ -42,18 +43,18 @@ end
 function module:AddBroker(currencyId)
 	if (not currencyId) then return end
 	if (not tonumber(currencyId)) then
-		print("Not a valid ID! (" .. currencyId .. ")")
+		print(L("Invalid ID! (${id})", { id = currencyId }))
 		return
 	end
 	if (brokers[currencyId]) then
-		print("Already added! (" .. currencyId .. ")")
+		print(L("Already added! (${id})", { id = currencyId }))
 		return
 	end
 
 	local currencyName, currencyAmount, icon = GetCurrencyInfo(currencyId)
 
 	if (ElioteUtils.empty(currencyName)) then
-		print("Not a currency! (" .. currencyId .. ")")
+		print(L("No currency with id '${id}' found!", { id = currencyId }))
 		return
 	end
 
@@ -66,7 +67,7 @@ function module:AddBroker(currencyId)
 	brokerTable.broker = LibStub("LibDataBroker-1.1"):NewDataObject(brokerName, {
 		type = "data source",
 		icon = icon or "Interface\\Icons\\INV_Misc_QuestionMark",
-		label = "BA (currency) - " .. currencyName or currencyId,
+		label = L["BA (currency) - "] .. currencyName or currencyId,
 		name = Colors.WHITE .. (currencyName or currencyId) .. "|r",
 		OnTooltipShow = function(tooltip)
 			local _, amount, _, _, _, maximum = GetCurrencyInfo(currencyId)
@@ -77,11 +78,11 @@ function module:AddBroker(currencyId)
 			tooltip:AddLine(Colors.WHITE .. "[BrokerAnything]")
 
 			tooltip:AddDoubleLine(
-					"This session:",
+					L["This session:"],
 					BrokerAnything:FormatBalance(amount - brokerTable.sessionStart, true)
 			);
-			tooltip:AddDoubleLine("Current:", Colors.WHITE .. amount);
-			tooltip:AddDoubleLine("Maximum:", Colors.WHITE .. maximum);
+			tooltip:AddDoubleLine(L["Current:"], Colors.WHITE .. amount);
+			tooltip:AddDoubleLine(L["Maximum:"], Colors.WHITE .. maximum);
 
 			tooltip:Show()
 		end,
@@ -90,7 +91,7 @@ function module:AddBroker(currencyId)
 
 	if (not brokerTable.broker) then
 		brokerTable.broker = LibStub("LibDataBroker-1.1"):GetDataObjectByName(brokerName)
-		print("Using the existing data broker: " .. brokerName)
+		print(L["Using the existing data broker: "] .. brokerName)
 	end
 
 	brokers[currencyId] = brokerTable
@@ -103,18 +104,18 @@ function module:GetOptions()
 	return {
 		currency = {
 			type = 'group',
-			name = 'Currency',
+			name = L["Currency"],
 			args = {
 				info = {
 					type = "header",
-					name = "You can drag & drop items here!",
+					name = L["You can drag & drop items here!"],
 					hidden = true,
 					dialogHidden = false,
 					order = 0
 				},
 				add = {
 					type = 'input',
-					name = 'Add',
+					name = L["Add"],
 					width = 'full',
 					set = function(info, value)
 						module:AddBroker(ElioteUtils.getId(value))
@@ -125,14 +126,14 @@ function module:GetOptions()
 				},
 				remove = {
 					type = 'select',
-					name = 'Remove',
+					name = L["Remove"],
 					width = 'full',
 					set = function(info, value)
 						module.db.profile.ids[value] = nil
 						brokers[value].broker.value = nil
-						brokers[value].broker.text = "Reload UI!"
+						brokers[value].broker.text = L["Reload UI!"]
 						brokers[value] = nil
-						print("Reload UI to take effect!")
+						print(L["Reload UI to take effect!"])
 					end,
 					get = function(info) end,
 					values = function()
