@@ -74,8 +74,10 @@ function module:AddBroker(itemID)
 			label = "BA (item) - " .. itemName,
 			name = itemColor .. itemName .. "|r",
 			OnTooltipShow = function(tooltip)
-				tooltip:SetText(itemColor .. itemName .. "|r")
+				tooltip:SetHyperlink(itemLink)
+
 				tooltip:AddLine(" ");
+				tooltip:AddLine(Colors.WHITE .. "[BrokerAnything]")
 
 				local bag = GetItemCount(itemID, false)
 				local total = GetItemCount(itemID, true)

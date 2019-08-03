@@ -50,7 +50,7 @@ function module:AddBroker(currencyId)
 		return
 	end
 
-	local currencyName, currencyAmount, icon, _, _, maximumValue = GetCurrencyInfo(currencyId)
+	local currencyName, currencyAmount, icon = GetCurrencyInfo(currencyId)
 
 	if (ElioteUtils.empty(currencyName)) then
 		print("Not a currency! (" .. currencyId .. ")")
@@ -69,15 +69,19 @@ function module:AddBroker(currencyId)
 		label = "BA (currency) - " .. currencyName or currencyId,
 		name = Colors.WHITE .. (currencyName or currencyId) .. "|r",
 		OnTooltipShow = function(tooltip)
-			tooltip:SetText(Colors.WHITE .. currencyName)
+			local _, amount, _, _, _, maximum = GetCurrencyInfo(currencyId)
+			local link = GetCurrencyLink(currencyId, amount)
+			tooltip:SetHyperlink(link)
+
 			tooltip:AddLine(" ");
+			tooltip:AddLine(Colors.WHITE .. "[BrokerAnything]")
 
 			tooltip:AddDoubleLine(
 					"This session:",
-					BrokerAnything:FormatBalance(currencyAmount - brokerTable.sessionStart, true)
+					BrokerAnything:FormatBalance(amount - brokerTable.sessionStart, true)
 			);
-			tooltip:AddDoubleLine("Current:", Colors.WHITE .. currencyAmount);
-			tooltip:AddDoubleLine("Maximum:", Colors.WHITE .. maximumValue);
+			tooltip:AddDoubleLine("Current:", Colors.WHITE .. amount);
+			tooltip:AddDoubleLine("Maximum:", Colors.WHITE .. maximum);
 
 			tooltip:Show()
 		end,

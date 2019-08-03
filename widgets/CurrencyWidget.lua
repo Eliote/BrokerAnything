@@ -47,4 +47,10 @@ function Predictor:GetValues(text, values, max)
 	end
 end
 
+function Predictor:GetHyperlink(key)
+	local _, currencyAmount = GetCurrencyInfo(key)
+	local link = GetCurrencyLink(key, currencyAmount)
+	return link
+end
+
 Completing:Register("Currency_BrokerAnything", Predictor)
