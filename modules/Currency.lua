@@ -39,6 +39,7 @@ function module:OnEnable()
 end
 
 function module:AddBroker(currencyId)
+	if (not currencyId) then return end
 	if (not tonumber(currencyId)) then
 		print("Not a valid ID! (" .. currencyId .. ")")
 		return
@@ -114,7 +115,8 @@ function module:GetOptions()
 						module:AddBroker(BrokerAnything:GetId(value))
 					end,
 					get = false,
-					order = 1
+					order = 1,
+					dialogControl = "EditBoxCurrency_BrokerAnything"
 				},
 				remove = {
 					type = 'select',
