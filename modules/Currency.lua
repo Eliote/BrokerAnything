@@ -3,6 +3,7 @@ local ADDON_NAME, _ = ...
 local BrokerAnything = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
 local module = BrokerAnything:NewModule("CurrencyModule", "AceEvent-3.0")
 local Colors = BrokerAnything.Colors
+local ElioteUtils = LibStub("LibElioteUtils-1.0")
 
 local brokers = {}
 module.brokers = brokers
@@ -51,7 +52,7 @@ function module:AddBroker(currencyId)
 
 	local currencyName, currencyAmount, icon, _, _, maximumValue = GetCurrencyInfo(currencyId)
 
-	if (currencyName == nil or currencyName == '') then
+	if (ElioteUtils.empty(currencyName)) then
 		print("Not a currency! (" .. currencyId .. ")")
 		return
 	end
@@ -112,7 +113,7 @@ function module:GetOptions()
 					name = 'Add',
 					width = 'full',
 					set = function(info, value)
-						module:AddBroker(BrokerAnything:GetId(value))
+						module:AddBroker(ElioteUtils.getId(value))
 					end,
 					get = false,
 					order = 1,

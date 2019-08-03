@@ -3,6 +3,7 @@ local ADDON_NAME, _ = ...
 local BrokerAnything = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
 local module = BrokerAnything:NewModule("ItemModule", "AceEvent-3.0")
 local Colors = BrokerAnything.Colors
+local ElioteUtils = LibStub("LibElioteUtils-1.0")
 
 local brokers = {}
 module.brokers = brokers
@@ -122,7 +123,7 @@ function module:GetOptions()
 					name = 'Add',
 					width = 'full',
 					set = function(info, value)
-						module:AddBroker(BrokerAnything:GetId(value))
+						module:AddBroker(ElioteUtils.getId(value))
 					end,
 					get = false,
 					order = 1

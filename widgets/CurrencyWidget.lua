@@ -3,13 +3,16 @@ local Predictor = {
 	currencyCache = {}
 }
 
-local function empty(str)
-	return not str or str == ""
-end
+local ElioteUtils = LibStub("LibElioteUtils-1.0")
+local empty = ElioteUtils.empty
+local startsWith = ElioteUtils.startsWith
+local getTexture = ElioteUtils.getTexture
+
+local GetCurrencyInfo = GetCurrencyInfo
+local GetCurrencyLink = GetCurrencyLink
 
 function Predictor:Initialize()
 	self.Initialize = nil
-
 	self:BuildCache()
 end
 
@@ -27,15 +30,6 @@ function Predictor:BuildCache()
 	end
 end
 
-local function startsWith(str, start)
-	return str:sub(1, #start) == start
-end
-
-local function getTexture(icon)
-	if (not icon) then return "" end
-	return "|T" .. icon .. ":0|t"
-end
-
 function Predictor:GetValues(text, values, max)
 	-- first let's try to add the id to the cache
 	Predictor:Cache(tonumber(text))
@@ -51,8 +45,6 @@ function Predictor:GetValues(text, values, max)
 			if (count >= max) then break end
 		end
 	end
-
-	--return values
 end
 
 Completing:Register("Currency_BrokerAnything", Predictor)
