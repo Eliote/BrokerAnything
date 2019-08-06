@@ -137,7 +137,8 @@ function module:GetOptions()
 						module:AddBroker(ElioteUtils.getId(value))
 					end,
 					get = false,
-					order = 1
+					order = 1,
+					dialogControl = "EditBoxItem_BrokerAnything"
 				},
 				remove = {
 					type = 'select',
