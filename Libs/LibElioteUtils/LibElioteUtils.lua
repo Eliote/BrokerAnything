@@ -61,3 +61,21 @@ end
 function ElioteUtils.empty(str)
 	return not str or str == ""
 end
+
+---
+--- Given any function f, memoize(f) returns a new function that returns the same
+--- results as f but memoizes them.
+---@param f function
+---@return function
+function ElioteUtils.memoize (f)
+	local mem = {} -- memoizing table
+	setmetatable(mem, {__mode = "kv"}) -- make it weak
+	return function (x) -- new version of ’f’, with memoizing
+		local r = mem[x]
+		if r == nil then -- no previous result?
+			r = f(x) -- calls original function
+			mem[x] = r -- store result for reuse
+		end
+		return r
+	end
+end

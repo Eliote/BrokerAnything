@@ -16,4 +16,5 @@ BrokerAnything.lua
 
 modules\Broker.lua
 modules\Currency.lua
+modules\Custom.lua
 modules\Item.lua
