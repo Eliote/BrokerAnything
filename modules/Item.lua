@@ -38,10 +38,10 @@ function module:OnEnable()
 		if (v) then module:AddBroker(k) end
 	end
 
-	self:RegisterEvent('BAG_UPDATE')
+	self:RegisterEvent('BAG_UPDATE_DELAYED')
 end
 
-function module:BAG_UPDATE()
+function module:BAG_UPDATE_DELAYED()
 	updateAll()
 end
 
