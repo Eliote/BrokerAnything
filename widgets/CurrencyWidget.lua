@@ -42,6 +42,7 @@ function Predictor:GetValues(text, values, max)
 			local link = GetCurrencyLink(id, currencyAmount) or "[" .. name .. "]"
 			values[id] = "|cFFAAAAAA(" .. id .. ")|r " .. getTexture(icon) .. link
 
+			count = count + 1
 			if (count >= max) then break end
 		end
 	end
