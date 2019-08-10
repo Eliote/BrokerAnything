@@ -10,6 +10,7 @@ Libs\embeds.xml
 Locales.lua
 
 widgets\CurrencyWidget.lua
+widgets\EventWidget.lua
 widgets\ItemWidget.lua
 
 BrokerAnything.lua

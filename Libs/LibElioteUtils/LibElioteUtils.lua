@@ -1,4 +1,5 @@
 local MAJOR, MINOR = "LibElioteUtils-1.0", 1
+---@class ElioteUtils
 local ElioteUtils, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not ElioteUtils then return end
@@ -59,7 +60,7 @@ end
 ---@param str string|nil
 ---@return boolean
 function ElioteUtils.empty(str)
-	return not str or str == ""
+	return not str or strtrim(str) == ""
 end
 
 ---

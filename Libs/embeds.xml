@@ -8,6 +8,7 @@
 	<Include file="AceConsole-3.0\AceConsole-3.0.xml"/>
 	<Include file="AceGUI-3.0\AceGUI-3.0.xml"/>
 	<Include file="AceLocale-3.0\AceLocale-3.0.xml"/>
+	<Include file="AceTimer-3.0\AceTimer-3.0.xml"/>
 	<Include file="AceConfig-3.0\AceConfig-3.0.xml"/>
 	<Include file="AceGUI-3.0-Search-EditBox\AceGUI-3.0-Search-EditBox.xml"/>
 	<Script file="LibDataBroker-1.1\LibDataBroker-1.1.lua"/>
