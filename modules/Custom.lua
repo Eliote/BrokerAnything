@@ -156,7 +156,7 @@ function module:EnableBroker(name)
 		schedulerId = schedulerId
 	}
 
-	runScript(brokerInfo.initScript, name .. "_Init", broker)
+	runScript(brokerInfo.initScript, name .. "_Initialization", broker)
 
 	for event, _ in pairs(brokerInfo.events) do
 		if (not registeredEvents[event]) then
@@ -287,7 +287,7 @@ function module:AddToOptions(name, brokerInfo)
 						args = {
 							onUpdate = {
 								type = 'toggle',
-								name = L["OnUpdate"],
+								name = L["Enable"],
 								set = function(info, value)
 									brokerInfo.onUpdate = value
 									module:AddOrUpdateBroker(name)
@@ -297,7 +297,7 @@ function module:AddToOptions(name, brokerInfo)
 							},
 							interval = {
 								type = 'range',
-								name = L["OnUpdate"],
+								name = L["Interval (seconds)"],
 								min = 0.01,
 								max = 60,
 								step = 0.01,
@@ -315,13 +315,13 @@ function module:AddToOptions(name, brokerInfo)
 				}
 			},
 			initTab = {
-				name = L["Init"],
+				name = L["Initialization"],
 				type = "group",
 				order = 3,
 				args = {
 					onInit = {
 						type = 'input',
-						name = L["Init"],
+						name = L["Script"],
 						desc = L[
 						[[Type your lua script here!
 This script runs at the initialization of the broker. It will be called as function(broker) where:

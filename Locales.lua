@@ -50,10 +50,51 @@ if L then
 	L["Reload UI to take effect!"] = "Recarregue a interface para surtir efeito!"
 	L["BA (currency) - "] = "BA (moeda) - "
 	L["BA (item) - "] = "BA (item) - "
+	L["BA (custom) - "] = "BA (personalizado) - "
 	L["Item"] = "Item"
 	L["Bag:"] = "Bolsa:"
 	L["Bank:"] = "Banco:"
 	L["Total:"] = "Total:"
+	L["Custom"] = "Personalizado"
+	L["Enable"] = "Habilitar"
+	L["Configuration"] = "Configuração"
+	L["Events"] = "Eventos"
+	L["Interval (seconds)"] = "Intervalo (segundos)"
+	L["Initialization"] = "Inicialização"
+	L[
+	[[Type your lua script here!
+This script runs at the initialization of the broker. It will be called as function(broker) where:
+[broker] is the LibDataBroker table]]
+	] =
+	[[Escreva seu código lua aqui!
+Esse script é executado na inicialização do broker. Ele será chamado como function(broker) aonde:
+[broker] é a tabela LibDataBroker]]
+	L[
+	[[Type your lua script here!
+This script runs on every event. It will be called as function(broker, event [, ...]) where:
+[broker] is the LibDataBroker table
+[event] is the Event that triggered it
+[...] the arguments the event supplies]]
+	] =
+	[[Escreva seu código lua aqui!
+Esse script é executado em todos eventos. Ele será chamado como function(broker, event [, ...]) aonde:
+[broker] é a tabela LibDataBroker
+[event] é o evento que o disparou
+[...] são os argumentos fornecidos pelo evento]]
+	L[
+	[[Type your lua script here!
+This script is called when the mouse is over the broker. It will be called as function(tooltip) where:
+[tooltip] is the wow Tooltip]]
+	] =
+	[[Escreva seu código lua aqui!
+Esse script é executado quando o mouse está sobre o broker. Ele será chamado como function(tooltip) aonde:
+[tooltip] é o Tooltip do wow]]
+	L[
+	[[Type your lua script here!
+This script is called when the broker is clicked.]]
+	] =
+	[[Escreva seu código lua aqui!
+Este script é executado quando o broker é clicado.]]
 	--@end-debug@
 
 	return
