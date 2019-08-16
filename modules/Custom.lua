@@ -19,6 +19,15 @@ local xpcall = xpcall
 
 local registeredEvents = {}
 
+local defaultInit = "local broker = ...\n\n"
+local defaultOnEvent = "local broker, event, args = ...\n\n"
+local defaultOnTooltip = [[local tooltip = ...
+tooltip:AddLine("BrokerAnything!");
+tooltip:Show()
+
+]]
+local defaultOnClick = "LibStub(\"AceConfigDialog-3.0\"):Open(\"BrokerAnything\")\n\n"
+
 local options = {
 	type = 'group',
 	name = L["Custom"],
@@ -113,8 +122,13 @@ end
 function module:AddOrUpdateBroker(name)
 	if (not name or not tostring(name)) then return end
 
+	---@class BrokerInfo
 	self.db.profile.brokers[name] = self.db.profile.brokers[name] or {
-		events = {}
+		events = {},
+		initScript = defaultInit,
+		script = defaultOnEvent,
+		tooltipScript = defaultOnTooltip,
+		clickScript = defaultOnClick
 	}
 	local brokerInfo = self.db.profile.brokers[name]
 
@@ -126,6 +140,7 @@ function module:AddOrUpdateBroker(name)
 end
 
 function module:EnableBroker(name)
+	---@type BrokerInfo
 	local brokerInfo = self.db.profile.brokers[name]
 
 	local brokerName = "BrokerAnything_Custom_" .. name
@@ -220,9 +235,11 @@ function module:GetOptions()
 end
 
 function module:AddToOptions(name, brokerInfo)
-	print(self:GetOptionName(name))
 	if (self:GetOption(name)) then return end
-	print(name)
+
+	local function getBrokerOrNull()
+		if (brokersTable[name]) then return brokersTable[name].broker end
+	end
 
 	self:SetOption(name, {
 		name = name,
@@ -334,6 +351,8 @@ This script runs at the initialization of the broker. It will be called as funct
 							module:AddOrUpdateBroker(name) -- this should trigger the init if needed
 						end,
 						get = function(info, value) return brokerInfo.initScript end,
+						func = function() return getBrokerOrNull() end,
+						dialogControl = "LuaEditBox",
 						order = 2
 					}
 				}
@@ -358,6 +377,8 @@ This script runs on every event. It will be called as function(broker, event [, 
 						multiline = 18,
 						set = function(info, value) brokerInfo.script = value end,
 						get = function(info, value) return brokerInfo.script end,
+						func = function() return getBrokerOrNull(), "TestEvent" end,
+						dialogControl = "LuaEditBox",
 						order = 1
 					},
 				}
@@ -380,6 +401,8 @@ This script is called when the mouse is over the broker. It will be called as fu
 						multiline = 18,
 						set = function(info, value) brokerInfo.tooltipScript = value end,
 						get = function(info, value) return brokerInfo.tooltipScript end,
+						dialogControl = "LuaEditBox",
+						func = function() return GameTooltip end,
 						order = 1
 					},
 				}
@@ -398,10 +421,10 @@ This script is called when the mouse is over the broker. It will be called as fu
 This script is called when the broker is clicked.]]
 						],
 						width = 'full',
-						multiline = 18,
 						set = function(info, value) brokerInfo.clickScript = value end,
 						get = function(info, value) return brokerInfo.clickScript end,
-						order = 1
+						dialogControl = "LuaEditBox",
+						order = 1,
 					},
 				}
 			},
