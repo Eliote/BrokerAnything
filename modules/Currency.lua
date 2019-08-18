@@ -82,7 +82,9 @@ function module:AddBroker(currencyId)
 					BrokerAnything:FormatBalance(amount - brokerTable.sessionStart, true)
 			)
 			tooltip:AddDoubleLine(L["Current:"], Colors.WHITE .. amount)
-			tooltip:AddDoubleLine(L["Maximum:"], Colors.WHITE .. maximum)
+			if (maximum > 0) then
+				tooltip:AddDoubleLine(L["Maximum:"], Colors.WHITE .. maximum)
+			end
 
 			tooltip:Show()
 		end,
