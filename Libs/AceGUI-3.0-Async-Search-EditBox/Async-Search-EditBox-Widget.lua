@@ -8,9 +8,27 @@ do
 	--[[-----------------------------------------------------------------------------
 		InteractiveLabel Widget
 	-------------------------------------------------------------------------------]]
-	local Type, Version = "AsyncSearchEditBox_Base", 1
+	local Type, Version = "AsyncSearchEditBox_Base", 2
 	local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 	if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
+
+	local GetCursorInfo, ClearCursor, GetSpellInfo = GetCursorInfo, ClearCursor, GetSpellInfo
+	local _G = _G
+
+	if not AceGUI30AsyncSearchEditBoxInsertLink then
+		-- upgradeable hook
+		hooksecurefunc("ChatEdit_InsertLink", function(...) return _G.AceGUI30AsyncSearchEditBoxInsertLink(...) end)
+	end
+
+	function _G.AceGUI30AsyncSearchEditBoxInsertLink(text)
+		for i = 1, AceGUI:GetWidgetCount(Type) do
+			local editbox = _G[("AceGUI30AsyncSearchEditBox%u"):format(i)]
+			if editbox and editbox:IsVisible() and editbox:HasFocus() then
+				editbox:Insert(text)
+				return true
+			end
+		end
+	end
 
 	local PREDICTOR_ROWS = 15
 	local predictorBackdrop = {
@@ -296,16 +314,24 @@ do
 		this:ClearFocus()
 	end
 
-	local function EditBox_OnReceiveDrag(this)
-		local obj = this.obj
-		local value = Fire(obj, "OnReceiveDrag")
-		if value then
-			SetText(value)
-			obj:Fire("OnEnterPressed", value)
-			ClearCursor()
+	local function EditBox_OnReceiveDrag(frame)
+		local self = frame.obj
+		local type, id, info = GetCursorInfo()
+		local name
+		if type == "item" then
+			name = info
+		elseif type == "spell" then
+			name = GetSpellInfo(id, info)
+		elseif type == "macro" then
+			name = GetMacroInfo(id)
 		end
-		HideButton(obj)
-		AceGUI:ClearFocus()
+		if name then
+			self:SetText(name)
+			self:Fire("OnEnterPressed", name)
+			ClearCursor()
+			HideButton(self)
+			AceGUI:ClearFocus()
+		end
 	end
 
 	local function EditBox_OnTextChanged(this)
