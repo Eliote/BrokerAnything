@@ -82,7 +82,7 @@ function module:AddBroker(itemID)
 			OnTooltipShow = function(tooltip)
 				tooltip:SetHyperlink(itemLink)
 
-				tooltip:AddLine(" ");
+				tooltip:AddLine(" ")
 				tooltip:AddLine(Colors.WHITE .. "[BrokerAnything]")
 
 				local bag = GetItemCount(itemID, false)
@@ -91,10 +91,10 @@ function module:AddBroker(itemID)
 				tooltip:AddDoubleLine(
 						L["This session:"],
 						BrokerAnything:FormatBalance(total - brokerTable.sessionStart, true)
-				);
-				tooltip:AddDoubleLine(L["Bag:"], Colors.WHITE .. bag);
-				tooltip:AddDoubleLine(L["Bank:"], Colors.WHITE .. (total - bag));
-				tooltip:AddDoubleLine(L["Total:"], Colors.WHITE .. total);
+				)
+				tooltip:AddDoubleLine(L["Bag:"], Colors.WHITE .. bag)
+				tooltip:AddDoubleLine(L["Bank:"], Colors.WHITE .. (total - bag))
+				tooltip:AddDoubleLine(L["Total:"], Colors.WHITE .. total)
 
 				tooltip:Show()
 			end,

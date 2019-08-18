@@ -74,15 +74,15 @@ function module:AddBroker(currencyId)
 			local link = GetCurrencyLink(currencyId, amount)
 			tooltip:SetHyperlink(link)
 
-			tooltip:AddLine(" ");
+			tooltip:AddLine(" ")
 			tooltip:AddLine(Colors.WHITE .. "[BrokerAnything]")
 
 			tooltip:AddDoubleLine(
 					L["This session:"],
 					BrokerAnything:FormatBalance(amount - brokerTable.sessionStart, true)
-			);
-			tooltip:AddDoubleLine(L["Current:"], Colors.WHITE .. amount);
-			tooltip:AddDoubleLine(L["Maximum:"], Colors.WHITE .. maximum);
+			)
+			tooltip:AddDoubleLine(L["Current:"], Colors.WHITE .. amount)
+			tooltip:AddDoubleLine(L["Maximum:"], Colors.WHITE .. maximum)
 
 			tooltip:Show()
 		end,

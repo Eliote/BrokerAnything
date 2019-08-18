@@ -22,7 +22,7 @@ local registeredEvents = {}
 local defaultInit = "local broker = ...\n\n"
 local defaultOnEvent = "local broker, event, args = ...\n\n"
 local defaultOnTooltip = [[local tooltip = ...
-tooltip:AddLine("BrokerAnything!");
+tooltip:AddLine("BrokerAnything!")
 tooltip:Show()
 
 ]]
