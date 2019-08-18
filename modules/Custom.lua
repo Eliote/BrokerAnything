@@ -183,7 +183,7 @@ end
 function module:DisableBroker(name)
 	self:CancelScheduler(name)
 
-	if (brokersTable[name] and brokersTable[name].brokers) then
+	if (brokersTable[name] and brokersTable[name].broker) then
 		brokersTable[name].broker.value = nil
 		brokersTable[name].broker.text = L["Reload UI!"]
 	end
