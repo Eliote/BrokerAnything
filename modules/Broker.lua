@@ -12,6 +12,14 @@ local broker = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(ADDON_NAME,
 })
 local LDBIcon = LibStub("LibDBIcon-1.0")
 
+local function textWithIcon(text, icon)
+	text = text or ""
+	if (icon) then
+		return "|T" .. icon .. ":0|t " .. text
+	end
+	return text
+end
+
 function broker.OnTooltipShow(tip)
 	tip:AddLine(Colors.WHITE .. ADDON_NAME)
 	tip:AddLine(Colors.YELLOW .. L["Click to open the UI"])
@@ -21,9 +29,9 @@ function broker.OnTooltipShow(tip)
 			tip:AddLine(" ")
 			tip:AddLine(baModule.brokerTitle or "")
 			for id, brokerTable in pairs(baModule.brokers) do
-				if(brokerTable.broker.type == "data source") then
-					tip:AddDoubleLine(brokerTable.broker.name or id, brokerTable.broker.text)
-					tip:AddTexture(brokerTable.broker.icon)
+				if (brokerTable.broker.type == "data source") then
+					local nameWithIcon = textWithIcon(brokerTable.broker.name or id, brokerTable.broker.icon)
+					tip:AddDoubleLine(nameWithIcon, brokerTable.broker.text)
 				end
 			end
 		end
