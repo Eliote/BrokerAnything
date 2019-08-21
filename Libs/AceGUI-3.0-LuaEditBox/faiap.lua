@@ -39,6 +39,10 @@ if not lib then return end -- No upgrade needed
 
 local UPDATE_INTERVAL = 0.2 -- Time to wait after last keypress before updating
 
+local stringgsub, strfind, strchar, strrep, strsub = string.gsub, string.find, string.char, string.rep, string.sub
+local strbyte = string.byte
+local tinsert, tconcat = table.insert, table.concat
+local wipe = wipe
 
 do
 	local cursorPosition, cursorDelta;
@@ -55,15 +59,15 @@ do
 	end
 
 	--- Removes a single escape sequence.
-	local function stripCode(pattern, text, oldCursor)
+	function lib.stripCode(pattern, text, oldCursor)
 		cursorPosition, cursorDelta = oldCursor, 0
 		return text:gsub(pattern, stripCodeGsub), oldCursor and cursorPosition + cursorDelta
 	end
 
 	--- Strips Text of all color escape sequences.
 	function lib.stripColors(text, cursor)
-		text, cursor = stripCode("(|*)(|[Cc]%x%x%x%x%x%x%x%x)()", text, cursor)
-		return stripCode("(|*)(|[Rr])()", text, cursor)
+		text, cursor = lib.stripCode("(|*)(|[Cc]%x%x%x%x%x%x%x%x)()", text, cursor)
+		return lib.stripCode("(|*)(|[Rr])()", text, cursor)
 	end
 end
 
@@ -136,6 +140,21 @@ do
 		return true
 	end
 
+	function lib.decode(code)
+		if code then
+			--code = lib.stripColors(code)
+			code = stringgsub(code, "||", "|")
+		end
+		return code or ""
+	end
+
+	function lib.encode(code)
+		if code then
+			code = stringgsub(code, "|", "||")
+		end
+		return code or ""
+	end
+
 	--- Flags the editbox to be reformatted when its contents change.
 	local function OnTextChanged(self, ...)
 		if (self.faiap_OnTextChanged) then
@@ -171,34 +190,35 @@ do
 	-- @param Raw  True to return fully formatted contents.
 	local function GetText(self, raw)
 		if (raw) then
-			return GetTextBackup(self)
+			return lib.decode(GetTextBackup(self))
 		else
-			return GetCodeCached(self)
+			return lib.decode(GetCodeCached(self))
 		end
 	end
 
 	--- Clears cached contents if set directly.
 	-- This is necessary because OnTextChanged won't fire immediately or if the
 	-- edit box is hidden.
-	local function SetText(self, ...)
+	local function SetText(self, text)
 		codeCache[self] = nil
-		return SetTextBackup(self, ...)
+		return SetTextBackup(self, lib.encode(text))
 	end
 
-	local function Insert(self, ...)
+	local function Insert(self, text)
 		codeCache[self] = nil
-		return InsertBackup(self, ...)
+		return InsertBackup(self, lib.encode(text))
 	end
 
 	--- @return number Cursor position within un-colored text.
 	local function GetCursorPosition(self, ...)
-		local _, cursor = lib.stripColors(GetTextBackup(self), GetCursorPositionBackup(self, ...))
-		return cursor
+		local text, cursor = lib.stripColors(GetTextBackup(self), GetCursorPositionBackup(self, ...))
+		local _, subs = stringgsub(strsub(text, 0, cursor), "||", "|")
+		return cursor - subs
 	end
 
 	--- Sets the cursor position relative to un-colored text.
 	local function SetCursorPosition(self, cursor, ...)
-		local _, newCursor = lib.formatCode(GetCodeCached(self), nil, self.faiap_colorTable, cursor)
+		local _, newCursor = lib.formatCode(GetText(self), nil, self.faiap_colorTable, cursor)
 		return SetCursorPositionBackup(self, newCursor, ...)
 	end
 
@@ -239,7 +259,7 @@ do
 			InsertBackup = editBox.Insert
 			GetCursorPositionBackup = editBox.GetCursorPosition
 			SetCursorPositionBackup = editBox.SetCursorPosition
-			HighlightTextBackup = editBox.HighlightText
+			--HighlightTextBackup = editBox.HighlightText
 		end
 		tabWidth = tabWidth or 4
 		colorTable = colorTable or lib.defaultColorTable
@@ -253,7 +273,7 @@ do
 			editBox.Insert = Insert
 			editBox.GetCursorPosition = GetCursorPosition
 			editBox.SetCursorPosition = SetCursorPosition
-			editBox.HighlightText = HighlightText
+			--editBox.HighlightText = HighlightText
 
 			if (enabled[editBox] == nil) then
 				-- Never hooked before
@@ -327,7 +347,6 @@ local TK_SUBTRACT = newToken("SUBTRACT")
 local TK_VARARG = newToken("VARARG")
 local TK_WHITESPACE = newToken("WHITESPACE")
 
-local strbyte = string.byte
 local BYTE_0 = strbyte("0")
 local BYTE_9 = strbyte("9")
 local BYTE_ASTERISK = strbyte("*")
@@ -442,8 +461,6 @@ do
 	Color("|cffcc542e", "sort", "tinsert", "tremove", "wipe");
 end
 
-local strfind = string.find
-
 --- Reads the next Lua identifier from its beginning.
 local function nextIdentifier(text, pos)
 	local _, endPos = strfind(text, "^[_%a][_%w]*", pos)
@@ -534,8 +551,6 @@ local function nextComment(text, pos)
 	local _, endPos = strfind(text, "[^\r\n]*", pos)
 	return TK_COMMENT_SHORT, endPos + 1
 end
-
-local strchar = string.char
 
 --- Reads the next single/double quoted string beginning at its opening quote.
 -- Note: Strings with unescaped newlines aren't properly terminated.
@@ -671,8 +686,6 @@ local indents = {
 	["else"] = indentBoth
 }
 
-local strrep, strsub = string.rep, string.sub
-local tinsert = table.insert
 local TERMINATOR = "|r"
 local buffer = {}
 
@@ -763,5 +776,5 @@ function lib.formatCode(code, tabWidth, colorTable, cursorOld)
 			end
 		end
 	end
-	return table.concat(buffer), cursor or bufferLen
+	return tconcat(buffer), cursor or bufferLen
 end

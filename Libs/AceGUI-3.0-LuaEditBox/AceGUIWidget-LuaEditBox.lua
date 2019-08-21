@@ -221,8 +221,8 @@ end
 
 local function OnVerticalScroll(self, offset)
 	-- ScrollFrame
-	local editBox = self.obj.editBox
-	editBox:SetHitRectInsets(0, 0, offset, editBox:GetHeight() - offset - self:GetHeight())
+	--local editBox = self.obj.editBox
+	--editBox:SetHitRectInsets(0, 0, offset, editBox:GetHeight() - offset - self:GetHeight())
 	self.obj.lineScrollFrame:SetVerticalScroll(offset)
 end
 
