@@ -47,7 +47,7 @@ local function UpdateLineNumbers(self)
 	sizeTestFontString:SetText(tostring(lineCount))
 	local newWidth = sizeTestFontString:GetStringWidth() + 12
 	lineScrollFrame:SetPoint("BOTTOMRIGHT", self.button, "TOPLEFT", newWidth, 4)
-	lineEditBox:SetWidth(newWidth)
+	lineEditBox:SetWidth(lineScrollFrame:GetWidth() - 3)
 
 	sizeTestFontString:SetText("")
 	local lineHeight = floor(sizeTestFontString:GetLineHeight())
@@ -413,6 +413,7 @@ local function Constructor()
 	lineEditBox:SetTextColor(0.6, 0.6, 0.6)
 	lineEditBox:SetCountInvisibleLetters(false)
 	lineEditBox:SetScript("OnEditFocusGained", LineEditBoxOnEditFocusGained)
+	lineEditBox:SetJustifyH("RIGHT")
 
 	lineScrollFrame:SetScrollChild(lineEditBox)
 
