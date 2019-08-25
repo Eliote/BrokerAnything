@@ -281,7 +281,7 @@ function module:AddToOptions(name, brokerInfo)
 						name = L["Rename"],
 						width = 'full',
 						confirm = function(info, value)
-							return L([[Are you sure you want to rename "${name}" to "${newName}?"]], { name = name, newName = value })
+							return L('Are you sure you want to rename "${name}" to "${newName}"?', { name = name, newName = value })
 						end,
 						set = function(info, value)
 							if (empty(value)) then return false end

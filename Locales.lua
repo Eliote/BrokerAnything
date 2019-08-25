@@ -65,8 +65,7 @@ if L then
 	[[Type your lua script here!
 This script runs at the initialization of the broker. It will be called as function(broker) where:
 [broker] is the LibDataBroker table]]
-	] =
-	[[Escreva seu código lua aqui!
+	] = [[Escreva seu código lua aqui!
 Esse script é executado na inicialização do broker. Ele será chamado como function(broker) aonde:
 [broker] é a tabela LibDataBroker]]
 	L[
@@ -75,8 +74,7 @@ This script runs on every event. It will be called as function(broker, event [, 
 [broker] is the LibDataBroker table
 [event] is the Event that triggered it
 [...] the arguments the event supplies]]
-	] =
-	[[Escreva seu código lua aqui!
+	] = [[Escreva seu código lua aqui!
 Esse script é executado em todos eventos. Ele será chamado como function(broker, event [, ...]) aonde:
 [broker] é a tabela LibDataBroker
 [event] é o evento que o disparou
@@ -85,16 +83,18 @@ Esse script é executado em todos eventos. Ele será chamado como function(broke
 	[[Type your lua script here!
 This script is called when the mouse is over the broker. It will be called as function(tooltip) where:
 [tooltip] is the wow Tooltip]]
-	] =
-	[[Escreva seu código lua aqui!
+	] = [[Escreva seu código lua aqui!
 Esse script é executado quando o mouse está sobre o broker. Ele será chamado como function(tooltip) aonde:
 [tooltip] é o Tooltip do wow]]
 	L[
 	[[Type your lua script here!
 This script is called when the broker is clicked.]]
-	] =
-	[[Escreva seu código lua aqui!
+	] = [[Escreva seu código lua aqui!
 Este script é executado quando o broker é clicado.]]
+
+	L['Are you sure you want to remove "${name}"?\nAll of its configurations will be lost!'] = 'Tem certeza de que deseja remover "${name}"?\nTodas as suas configurações serão perdidas!'
+	L["Rename"] = "Renomear"
+	L['Are you sure you want to rename "${name}" to "${newName}"?'] = 'Tem certeza de que deseja renomear "${name}" para "${newName}"?'
 	--@end-debug@
 
 	return
