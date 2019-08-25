@@ -234,6 +234,17 @@ function module:GetOptions()
 	return { custom = options }
 end
 
+function module:RenameBroker(name, newName)
+	if (self.db.profile.brokers[newName]) then
+		print(L("Broker '${newName}' already exists!", { newName = newName }))
+		return
+	end
+
+	self.db.profile.brokers[newName] = self.db.profile.brokers[name]
+	module:RemoveBroker(name)
+	module:AddOrUpdateBroker(newName)
+end
+
 function module:AddToOptions(name, brokerInfo)
 	if (self:GetOption(name)) then return end
 
@@ -262,10 +273,21 @@ function module:AddToOptions(name, brokerInfo)
 				type = "group",
 				order = 2,
 				args = {
+					rename = {
+						type = 'input',
+						name = L["Rename"],
+						width = 'full',
+						set = function(info, value)
+							if (empty(value)) then return false end
+							module:RenameBroker(name, value)
+						end,
+						get = false,
+						order = 10
+					},
 					eventsGroup = {
 						name = L["Events"],
 						type = "group",
-						order = 1,
+						order = 20,
 						inline = true,
 						args = {
 							add = {
@@ -299,7 +321,7 @@ function module:AddToOptions(name, brokerInfo)
 					updateGroup = {
 						name = L["OnUpdate"],
 						type = "group",
-						order = 2,
+						order = 30,
 						inline = true,
 						args = {
 							onUpdate = {
