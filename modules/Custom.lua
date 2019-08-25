@@ -44,6 +44,9 @@ local options = {
 			type = 'select',
 			name = L["Remove"],
 			width = 'full',
+			confirm = function(info, value)
+				return L('Are you sure you want to remove "${name}"?\nAll of its configurations will be lost!', { name = value })
+			end,
 			set = function(info, value) module:RemoveBroker(value) end,
 			get = function(info) end,
 			values = function()
@@ -277,6 +280,9 @@ function module:AddToOptions(name, brokerInfo)
 						type = 'input',
 						name = L["Rename"],
 						width = 'full',
+						confirm = function(info, value)
+							return L([[Are you sure you want to rename "${name}" to "${newName}?"]], { name = name, newName = value })
+						end,
 						set = function(info, value)
 							if (empty(value)) then return false end
 							module:RenameBroker(name, value)
