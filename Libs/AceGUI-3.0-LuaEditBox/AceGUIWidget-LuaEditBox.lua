@@ -1,12 +1,9 @@
-local Type, Version = "LuaEditBox", 1
+local Type, Version = "LuaEditBox", 2
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
 ---@type ForAllIndentsAndPurposes
 local IndentationLib = LibStub("ForAllIndentsAndPurposes-Eliote-1.0")
-
----@type LuaEditBoxConfig
-local Config = LibStub("AceGUIWidget-LuaEditBox-Config-1.0")
 
 -- Lua APIs
 local pairs = pairs
@@ -75,7 +72,7 @@ local function UpdateLineNumbers(self)
 			sizeTestFontString:SetHeight(0)
 			sizeTestFontString:SetText(line:gsub("\n", ""))
 			local height = floor(sizeTestFontString:GetHeight())
-			if(height > lineHeight) then
+			if (height > lineHeight) then
 				lineText = lineText .. stringrep("\n", floor(height / lineHeight) - 1)
 			end
 		end
@@ -195,10 +192,6 @@ local function OnSizeChanged(self, width, height)
 	self.obj.sizeTestFontString:SetWidth(width)
 end
 
-local function OnParentFrameSizeChanged(self, width, height)
-	self.obj.frame:SetHeight(height)
-end
-
 local function OnTextChanged(self, userInput, ...)
 	local widget = self.obj
 
@@ -257,7 +250,6 @@ local methods = {
 
 	["OnRelease"] = function(self)
 		self:ClearFocus()
-		self.parent.frame:SetScript("OnSizeChanged", nil)
 	end,
 
 	["SetDisabled"] = function(self, disabled)
@@ -337,16 +329,10 @@ local methods = {
 		return self.editBox:SetCursorPosition(...)
 	end,
 
-	["SetParent"] = function(self, parent)
-		local frame = self.frame
-		frame:SetParent(nil)
-		frame:SetParent(parent.content)
-		self.parent = parent
-
-		parent.frame:SetScript("OnSizeChanged", function(_, width, height)
-			OnParentFrameSizeChanged(self.frame, width, height)
-		end)
-		OnParentFrameSizeChanged(self.frame, self.parent.content.width, self.parent.content.height)
+	["SetFontObject"] = function(self, fontObject)
+		self.lineEditBox:SetFontObject(fontObject)
+		self.editBox:SetFontObject(fontObject)
+		self.sizeTestFontString:SetFontObject(fontObject)
 	end
 }
 
@@ -407,7 +393,7 @@ local function Constructor()
 	local lineEditBox = CreateFrame("EditBox", ("%s%dNumEdit"):format(Type, widgetNum), lineScrollFrame)
 	lineEditBox:SetAllPoints()
 	lineEditBox:SetWidth(10)
-	lineEditBox:SetFontObject(Config.fontObject)
+	lineEditBox:SetFontObject(ChatFontNormal)
 	lineEditBox:SetMultiLine(true)
 	lineEditBox:SetAutoFocus(false)
 	lineEditBox:SetTextColor(0.6, 0.6, 0.6)
@@ -444,7 +430,7 @@ local function Constructor()
 
 	local editBox = CreateFrame("EditBox", ("%s%dEdit"):format(Type, widgetNum), scrollFrame)
 	editBox:SetAllPoints()
-	editBox:SetFontObject(Config.fontObject)
+	editBox:SetFontObject(ChatFontNormal)
 	editBox:SetMultiLine(true)
 	editBox:EnableMouse(true)
 	editBox:SetAutoFocus(false)
@@ -465,7 +451,7 @@ local function Constructor()
 	sizeTestFontString:SetJustifyH("LEFT")
 	sizeTestFontString:SetJustifyV("TOP")
 	sizeTestFontString:SetPoint("TOPLEFT", editBox, "TOPLEFT")
-	sizeTestFontString:SetFontObject(Config.fontObject)
+	sizeTestFontString:SetFontObject(ChatFontNormal)
 	sizeTestFontString:SetNonSpaceWrap(true)
 	sizeTestFontString:SetWordWrap(true)
 	sizeTestFontString:Hide()

@@ -352,7 +352,7 @@ This script runs at the initialization of the broker. It will be called as funct
 						end,
 						get = function(info, value) return brokerInfo.initScript end,
 						func = function() return getBrokerOrNull() end,
-						dialogControl = "LuaEditBox",
+						dialogControl = "BrokerAnythingLuaEditBox",
 						order = 2
 					}
 				}
@@ -378,7 +378,7 @@ This script runs on every event. It will be called as function(broker, event [, 
 						set = function(info, value) brokerInfo.script = value end,
 						get = function(info, value) return brokerInfo.script end,
 						func = function() return getBrokerOrNull(), "TestEvent" end,
-						dialogControl = "LuaEditBox",
+						dialogControl = "BrokerAnythingLuaEditBox",
 						order = 1
 					},
 				}
@@ -401,7 +401,7 @@ This script is called when the mouse is over the broker. It will be called as fu
 						multiline = 18,
 						set = function(info, value) brokerInfo.tooltipScript = value end,
 						get = function(info, value) return brokerInfo.tooltipScript end,
-						dialogControl = "LuaEditBox",
+						dialogControl = "BrokerAnythingLuaEditBox",
 						func = function() return GameTooltip end,
 						order = 1
 					},
@@ -423,7 +423,7 @@ This script is called when the broker is clicked.]]
 						width = 'full',
 						set = function(info, value) brokerInfo.clickScript = value end,
 						get = function(info, value) return brokerInfo.clickScript end,
-						dialogControl = "LuaEditBox",
+						dialogControl = "BrokerAnythingLuaEditBox",
 						order = 1,
 					},
 				}

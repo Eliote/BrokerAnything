@@ -1,9 +1,4 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<Font name="VeraMonoFont" font="Interface\AddOns\BrokerAnything\Libs\AceGUI-3.0-LuaEditBox\Font\VeraMono.ttf">
-		<FontHeight val="11"/>
-	</Font>
-
 	<Script file="faiap.lua"/>
-	<Script file="AceGUIWidget-LuaEditBox-Config.lua"/>
 	<Script file="AceGUIWidget-LuaEditBox.lua"/>
 </Ui>
