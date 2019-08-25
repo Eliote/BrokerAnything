@@ -1,5 +1,9 @@
 local AceGUI = LibStub("AceGUI-3.0")
 
+local function OnRunScriptError(widget, err)
+	print("|cffff0000" .. (err or "unknown error") .. "|r")
+end
+
 local function OnParentFrameSizeChanged(self, width, height)
 	self.obj.frame:SetHeight(height)
 end
@@ -24,6 +28,7 @@ local function Constructor()
 	local luaEditBox = AceGUI:Create("LuaEditBox")
 
 	luaEditBox:SetFontObject(VeraMonoFont)
+	luaEditBox.OnRunScriptError = OnRunScriptError
 
 	SetParent = luaEditBox.SetParent
 	luaEditBox.SetParent = SetParentHook

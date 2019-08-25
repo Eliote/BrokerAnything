@@ -1,4 +1,4 @@
-local Type, Version = "LuaEditBox", 2
+local Type, Version = "LuaEditBox", 3
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -109,6 +109,9 @@ local function OnRunClick(self)
 	if (not fun) then
 		local _, lineNum = err:match("(%b[]):(%d+):")
 		widget.highlightNum = tonumber(lineNum)
+		if (widget.OnRunScriptError and type(widget.OnRunScriptError) == "function") then
+			widget:OnRunScriptError(err)
+		end
 		UpdateLineNumbers(self)
 		return
 	end
