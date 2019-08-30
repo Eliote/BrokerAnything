@@ -148,12 +148,13 @@ function module:EnableBroker(name)
 
 	local brokerName = "BrokerAnything_Custom_" .. name
 	local broker = LibStub("LibDataBroker-1.1"):NewDataObject(brokerName, {
+		id = brokerName,
 		type = "data source",
 		icon = "Interface\\Icons\\INV_Misc_QuestionMark",
 		label = L["BA (custom) - "] .. name,
 		name = Colors.WHITE .. name .. "|r",
-		OnTooltipShow = function(tooltip) runScript(brokerInfo.tooltipScript, name .. "_Tooltip", tooltip) end,
-		OnClick = function() runScript(brokerInfo.clickScript, name .. "_Click") end
+		OnTooltipShow = function(...) runScript(brokerInfo.tooltipScript, name .. "_Tooltip", ...) end,
+		OnClick = function(...) runScript(brokerInfo.clickScript, name .. "_Click", ...) end
 	})
 
 	if (not broker) then
