@@ -1,4 +1,4 @@
-## Interface: 82000
+## Interface: 11302
 ## Title: BrokerAnything
 ## Notes: Create a data broker for any ID
 ## Author: Eliote
@@ -10,7 +10,6 @@ Font\Fonts.xml
 
 Locales.lua
 
-widgets\CurrencyWidget.lua
 widgets\EventWidget.lua
 widgets\ItemWidget.lua
 widgets\LuaEditor.lua
@@ -18,6 +17,5 @@ widgets\LuaEditor.lua
 BrokerAnything.lua
 
 modules\Broker.lua
-modules\Currency.lua
 modules\Custom.lua
 modules\Item.lua
