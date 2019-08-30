@@ -159,7 +159,6 @@ function module:EnableBroker(name)
 
 	if (not broker) then
 		broker = LibStub("LibDataBroker-1.1"):GetDataObjectByName(brokerName)
-		--print(L["Using the existing data broker: "] .. brokerName)
 	end
 
 	self:CancelScheduler(name)
