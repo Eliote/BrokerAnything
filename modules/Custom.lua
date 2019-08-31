@@ -2,7 +2,9 @@ local ADDON_NAME, _ = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 local BrokerAnything = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
-local module = BrokerAnything:NewModule("CustomModule", "AceEvent-3.0", "AceTimer-3.0")
+local module = BrokerAnything:NewModule("CustomModule", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
+local LibCompress = LibStub:GetLibrary("LibCompress")
+local LibBase64 = LibStub("LibBase64-1.0")
 
 local Colors = BrokerAnything.Colors
 
@@ -217,7 +219,7 @@ function module:ReloadEvents()
 		end
 	end
 	for event, _ in pairs(remainingEvents) do
-		if(not registeredEvents[event]) then
+		if (not registeredEvents[event]) then
 			registeredEvents[event] = true
 			self:RegisterEvent(event, OnEvent)
 		end
@@ -385,7 +387,7 @@ This script runs at the initialization of the broker. It will be called as funct
 							brokerInfo.initScript = value
 							module:AddOrUpdateBroker(name) -- this should trigger the init if needed
 						end,
-						get = function(info, value) return brokerInfo.initScript end,
+						get = function(info) return brokerInfo.initScript end,
 						func = function() return getBrokerOrNull() end,
 						dialogControl = "BrokerAnythingLuaEditBox",
 						order = 2
@@ -411,7 +413,7 @@ This script runs on every event. It will be called as function(broker, event [, 
 						width = 'full',
 						multiline = 18,
 						set = function(info, value) brokerInfo.script = value end,
-						get = function(info, value) return brokerInfo.script end,
+						get = function(info) return brokerInfo.script end,
 						func = function() return getBrokerOrNull(), "TestEvent" end,
 						dialogControl = "BrokerAnythingLuaEditBox",
 						order = 1
@@ -435,7 +437,7 @@ This script is called when the mouse is over the broker. It will be called as fu
 						width = 'full',
 						multiline = 18,
 						set = function(info, value) brokerInfo.tooltipScript = value end,
-						get = function(info, value) return brokerInfo.tooltipScript end,
+						get = function(info) return brokerInfo.tooltipScript end,
 						dialogControl = "BrokerAnythingLuaEditBox",
 						func = function() return GameTooltip end,
 						order = 1
@@ -457,8 +459,54 @@ This script is called when the broker is clicked.]]
 						],
 						width = 'full',
 						set = function(info, value) brokerInfo.clickScript = value end,
-						get = function(info, value) return brokerInfo.clickScript end,
+						get = function(info) return brokerInfo.clickScript end,
 						dialogControl = "BrokerAnythingLuaEditBox",
+						order = 1,
+					},
+				}
+			},
+			shareTab = {
+				name = L["Share"],
+				type = "group",
+				order = 7,
+				cmdInline = true,
+				args = {
+					export = {
+						type = 'input',
+						name = L["Export"],
+						width = 'full',
+						multiline = 10,
+						get = function(info)
+							local serialized = module:Serialize(brokerInfo)
+							local compressed = LibCompress:Compress(serialized)
+							local encoded = LibBase64.Encode(compressed)
+							return encoded
+						end,
+						set = function(info, value) end,
+						order = 1,
+					},
+					import = {
+						type = 'input',
+						name = L["Import"],
+						width = 'full',
+						multiline = 10,
+						get = function(info) return end,
+						set = function(info, value)
+							local decoded = LibBase64.Decode(value)
+							local decompressed = LibCompress:Decompress(decoded)
+							local success, deserialized = module:Deserialize(decompressed)
+
+							if (not success) then
+								print(L["Corrupted data!"])
+								return
+							end
+
+							wipe(brokerInfo)
+							for k, v in pairs(deserialized) do
+								brokerInfo[k] = v
+							end
+							module:AddOrUpdateBroker(name)
+						end,
 						order = 1,
 					},
 				}
