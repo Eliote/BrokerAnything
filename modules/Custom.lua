@@ -178,6 +178,7 @@ function module:EnableBroker(name)
 
 	for event, _ in pairs(brokerInfo.events) do
 		if (not registeredEvents[event]) then
+			registeredEvents[event] = true
 			self:RegisterEvent(event, OnEvent)
 		end
 	end
@@ -213,6 +214,12 @@ function module:ReloadEvents()
 		if (not remainingEvents[event]) then
 			self:UnregisterEvent(event, OnEvent)
 			registeredEvents[event] = nil
+		end
+	end
+	for event, _ in pairs(remainingEvents) do
+		if(not registeredEvents[event]) then
+			registeredEvents[event] = true
+			self:RegisterEvent(event, OnEvent)
 		end
 	end
 end
