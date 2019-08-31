@@ -7,7 +7,7 @@ local Colors = BrokerAnything.Colors
 
 local broker = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(ADDON_NAME, {
 	type = "launcher",
-	icon = "1506453",
+	icon = [[Interface\AddOns\BrokerAnything\Icons\inv_misc_paperbundle03a]],
 	label = ADDON_NAME,
 })
 local LDBIcon = LibStub("LibDBIcon-1.0")
