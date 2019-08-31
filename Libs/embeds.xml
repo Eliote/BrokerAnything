@@ -16,4 +16,7 @@
 	<Include file="LibElioteUtils\LibElioteUtils.xml"/>
 	<Script file="AceGUI-3.0-Async-Search-EditBox\Async-Search-EditBox-Widget.lua"/>
 	<Include file="AceGUI-3.0-LuaEditBox\AceGUIWidget-LuaEditBox.xml"/>
+	<Include file="AceSerializer-3.0\AceSerializer-3.0.xml"/>
+	<Script file="LibCompress\LibCompress.lua"/>
+	<Script file="LibBase64-1.0\LibBase64-1.0.lua"/>
 </Ui>
