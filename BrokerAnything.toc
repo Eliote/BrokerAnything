@@ -17,5 +17,5 @@ widgets\LuaEditor.lua
 BrokerAnything.lua
 
 modules\Broker.lua
-modules\Custom.lua
+modules\Custom\Custom.lua
 modules\Item.lua
