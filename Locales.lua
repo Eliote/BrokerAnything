@@ -95,6 +95,9 @@ Este script é executado quando o broker é clicado.]]
 	L['Are you sure you want to remove "${name}"?\nAll of its configurations will be lost!'] = 'Tem certeza de que deseja remover "${name}"?\nTodas as suas configurações serão perdidas!'
 	L["Rename"] = "Renomear"
 	L['Are you sure you want to rename "${name}" to "${newName}"?'] = 'Tem certeza de que deseja renomear "${name}" para "${newName}"?'
+	L["Share"] = "Compartilhar"
+	L["Export"] = "Exportar"
+	L["Import"] = "Importar"
 	--@end-debug@
 
 	return
