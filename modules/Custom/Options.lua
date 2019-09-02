@@ -2,33 +2,14 @@ local ADDON_NAME, _ = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 local BrokerAnything = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
-local module = BrokerAnything:NewModule("CustomModule", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
-local LibCompress = LibStub:GetLibrary("LibCompress")
-local LibBase64 = LibStub("LibBase64-1.0")
 
-local Colors = BrokerAnything.Colors
+---@type CustomModule
+local module = BrokerAnything:GetModule("CustomModule")
 
 ---@type ElioteUtils
 local ElioteUtils = LibStub("LibElioteUtils-1.0")
-
-local brokersTable = {}
-module.brokers = brokersTable
-module.brokerTitle = L["Custom"]
-
-local loadstring = ElioteUtils.memoize(loadstring)
 local empty = ElioteUtils.empty
-local xpcall = xpcall
 
-local registeredEvents = {}
-
-local defaultInit = "local broker = ...\n\n"
-local defaultOnEvent = "local broker, event, args = ...\n\n"
-local defaultOnTooltip = [[local tooltip = ...
-tooltip:AddLine("BrokerAnything!")
-tooltip:Show()
-
-]]
-local defaultOnClick = "LibStub(\"AceConfigDialog-3.0\"):Open(\"BrokerAnything\")\n\n"
 
 local options = {
 	type = 'group',
@@ -65,203 +46,12 @@ local options = {
 	}
 }
 
-local function errorhandler(name)
-	return function(err) geterrorhandler()(name .. " " .. err) end
-end
-
-local function runScript(script, name, ...)
-	if (not empty(script)) then
-		xpcall(loadstring(script, name), errorhandler(name), ...)
-	end
-end
-
-local function OnEvent(event, ...)
-	for name, brokerTable in pairs(brokersTable) do
-		local info = brokerTable.brokerInfo
-		if (info.events[event]) then
-			runScript(info.script, name .. "_OnEvent_" .. event, brokerTable.broker, event, ...)
-		end
-	end
-end
-
-function module:TimerFeedback(name)
-	local brokerTable = brokersTable[name]
-	if (not brokerTable) then return end -- just in case
-
-	local info = brokerTable.brokerInfo
-	if (info.onUpdate) then
-		local event = "OnUpdate"
-		runScript(info.script, name .. "_OnEvent_" .. event, brokerTable.broker, event)
-	end
-end
-
-function module:OnEnable()
-	local defaults = {
-		profile = {
-			brokers = {}
-		}
-	}
-
-	self.db = BrokerAnything.db:RegisterNamespace("CustomModule", defaults)
-
-	for name, _ in pairs(self.db.profile.brokers) do
-		if (name) then self:AddOrUpdateBroker(name) end
-	end
-end
-
-function module:OnDisable()
-	for event, _ in ipairs(registeredEvents) do
-		self:UnregisterEvent(event)
-		registeredEvents[event] = nil
-	end
-end
-
-function module:RemoveBroker(name)
-	self:DisableBroker(name)
-	self.db.profile.brokers[name] = nil
-	options.args[self:GetOptionName(name)] = nil
-
-	print(L["Reload UI to take effect!"])
-end
-
-function module:AddOrUpdateBroker(name)
-	if (not name or not tostring(name)) then return end
-
-	---@class BrokerInfo
-	self.db.profile.brokers[name] = self.db.profile.brokers[name] or {
-		events = {},
-		initScript = defaultInit,
-		script = defaultOnEvent,
-		tooltipScript = defaultOnTooltip,
-		clickScript = defaultOnClick
-	}
-	local brokerInfo = self.db.profile.brokers[name]
-
-	self:AddToOptions(name, brokerInfo)
-
-	if brokerInfo.enable then
-		self:EnableBroker(name)
-	end
-end
-
-function module:EnableBroker(name)
-	---@type BrokerInfo
-	local brokerInfo = self.db.profile.brokers[name]
-
-	local brokerName = "BrokerAnything_Custom_" .. name
-	local broker = LibStub("LibDataBroker-1.1"):NewDataObject(brokerName, {
-		id = brokerName,
-		type = "data source",
-		icon = "Interface\\Icons\\INV_Misc_QuestionMark",
-		label = L["BA (custom) - "] .. name,
-		name = Colors.WHITE .. name .. "|r",
-		OnTooltipShow = function(...) runScript(brokerInfo.tooltipScript, name .. "_Tooltip", ...) end,
-		OnClick = function(...) runScript(brokerInfo.clickScript, name .. "_Click", ...) end
-	})
-
-	if (not broker) then
-		broker = LibStub("LibDataBroker-1.1"):GetDataObjectByName(brokerName)
-	end
-
-	self:CancelScheduler(name)
-
-	local schedulerId
-	if (brokerInfo.onUpdate) then
-		schedulerId = self:ScheduleRepeatingTimer("TimerFeedback", brokerInfo.onUpdateInterval or 0.1, name)
-	end
-
-	brokersTable[name] = {
-		brokerInfo = brokerInfo,
-		broker = broker,
-		schedulerId = schedulerId
-	}
-
-	runScript(brokerInfo.initScript, name .. "_Initialization", broker)
-
-	for event, _ in pairs(brokerInfo.events) do
-		if (not registeredEvents[event]) then
-			registeredEvents[event] = true
-			self:RegisterEvent(event, OnEvent)
-		end
-	end
-end
-
-function module:DisableBroker(name)
-	self:CancelScheduler(name)
-
-	if (brokersTable[name] and brokersTable[name].broker) then
-		brokersTable[name].broker.value = nil
-		brokersTable[name].broker.text = L["Reload UI!"]
-	end
-
-	brokersTable[name] = nil
-
-	self:ReloadEvents()
-end
-
-function module:CancelScheduler(name)
-	if brokersTable[name] and brokersTable[name].schedulerId then
-		self:CancelTimer(brokersTable[name].schedulerId)
-	end
-end
-
-function module:ReloadEvents()
-	local remainingEvents = {}
-	for _, brokerTable in pairs(brokersTable) do
-		for event, _ in pairs(brokerTable.brokerInfo.events) do
-			remainingEvents[event] = true
-		end
-	end
-	for event, _ in pairs(registeredEvents) do
-		if (not remainingEvents[event]) then
-			self:UnregisterEvent(event, OnEvent)
-			registeredEvents[event] = nil
-		end
-	end
-	for event, _ in pairs(remainingEvents) do
-		if (not registeredEvents[event]) then
-			registeredEvents[event] = true
-			self:RegisterEvent(event, OnEvent)
-		end
-	end
-end
-
-function module:SetBrokerState(name, enable)
-	if (enable) then self:EnableBroker(name) else self:DisableBroker(name) end
-end
-
-function module:GetOptionName(name)
-	return "broker_" .. name
-end
-
-function module:GetOption(name)
-	return options.args[self:GetOptionName(name)]
-end
-
-function module:SetOption(name, value)
-	options.args[self:GetOptionName(name)] = value
-end
-
-function module:GetOptions()
-	return { custom = options }
-end
-
-function module:RenameBroker(name, newName)
-	if (self.db.profile.brokers[newName]) then
-		print(L("Broker '${newName}' already exists!", { newName = newName }))
-		return
-	end
-
-	self.db.profile.brokers[newName] = self.db.profile.brokers[name]
-	module:RemoveBroker(name)
-	module:AddOrUpdateBroker(newName)
-end
-
 function module:AddToOptions(name, brokerInfo)
 	if (self:GetOption(name)) then return end
 
 	local function getBrokerOrNull()
-		if (brokersTable[name]) then return brokersTable[name].broker end
+		local customBrokerInfo = self:GetCustomBrokerInfo(name)
+		if (customBrokerInfo) then return customBrokerInfo.broker end
 	end
 
 	self:SetOption(name, {
@@ -476,12 +266,7 @@ This script is called when the broker is clicked.]]
 						name = L["Export"],
 						width = 'full',
 						multiline = 10,
-						get = function(info)
-							local serialized = module:Serialize(brokerInfo)
-							local compressed = LibCompress:Compress(serialized)
-							local encoded = LibBase64.Encode(compressed)
-							return encoded
-						end,
+						get = function(info) return module:ExportBroker(name, true) end,
 						set = function(info, value) end,
 						order = 1,
 					},
@@ -491,26 +276,27 @@ This script is called when the broker is clicked.]]
 						width = 'full',
 						multiline = 10,
 						get = function(info) return end,
-						set = function(info, value)
-							local decoded = LibBase64.Decode(value)
-							local decompressed = LibCompress:Decompress(decoded)
-							local success, deserialized = module:Deserialize(decompressed)
-
-							if (not success) then
-								print(L["Corrupted data!"])
-								return
-							end
-
-							wipe(brokerInfo)
-							for k, v in pairs(deserialized) do
-								brokerInfo[k] = v
-							end
-							module:AddOrUpdateBroker(name)
-						end,
+						set = function(info, value) module:ImportBroker(name, value, true) end,
 						order = 1,
 					},
 				}
 			},
 		}
 	})
+end
+
+function module:GetOptionName(name)
+	return "broker_" .. name
+end
+
+function module:GetOption(name)
+	return options.args[self:GetOptionName(name)]
+end
+
+function module:SetOption(name, value)
+	options.args[self:GetOptionName(name)] = value
+end
+
+function module:GetOptions()
+	return { custom = options }
 end
