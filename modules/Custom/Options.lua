@@ -6,10 +6,12 @@ local BrokerAnything = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
 ---@type CustomModule
 local module = BrokerAnything:GetModule("CustomModule")
 
+---@type CustomModule.Link
+local Link = module:GetModule("Link")
+
 ---@type ElioteUtils
 local ElioteUtils = LibStub("LibElioteUtils-1.0")
 local empty = ElioteUtils.empty
-
 
 local options = {
 	type = 'group',
@@ -46,7 +48,7 @@ local options = {
 	}
 }
 
-function module:AddToOptions(name, brokerInfo)
+function module:AddToOptions(name)
 	if (self:GetOption(name)) then return end
 
 	local function getBrokerOrNull()
@@ -64,10 +66,10 @@ function module:AddToOptions(name, brokerInfo)
 				name = L["Enable"],
 				width = "double",
 				set = function(info, val)
-					brokerInfo.enable = val
+					module:GetBrokerInfo(name).enable = val
 					module:SetBrokerState(name, val)
 				end,
-				get = function(info) return brokerInfo.enable end,
+				get = function(info) return module:GetBrokerInfo(name).enable end,
 				order = 1,
 			},
 			config = {
@@ -101,8 +103,8 @@ function module:AddToOptions(name, brokerInfo)
 								width = 'full',
 								set = function(info, value)
 									if (empty(value)) then return false end
-									brokerInfo.events = brokerInfo.events or {}
-									brokerInfo.events[value] = value
+									local events = module:BrokerInfoGetVar(name, "events", {})
+									events[value] = value
 									module:ReloadEvents()
 								end,
 								get = false,
@@ -114,11 +116,11 @@ function module:AddToOptions(name, brokerInfo)
 								name = L["Remove"],
 								width = 'full',
 								set = function(info, value)
-									brokerInfo.events[value] = nil
+									module:GetBrokerInfo(name).events[value] = nil
 									module:ReloadEvents()
 								end,
 								get = function(info) end,
-								values = function() return brokerInfo.events or {} end,
+								values = function() return module:GetBrokerInfo(name).events or {} end,
 								order = 2
 							},
 						}
@@ -133,10 +135,10 @@ function module:AddToOptions(name, brokerInfo)
 								type = 'toggle',
 								name = L["Enable"],
 								set = function(info, value)
-									brokerInfo.onUpdate = value
+									module:GetBrokerInfo(name).onUpdate = value
 									module:AddOrUpdateBroker(name)
 								end,
-								get = function(info) return brokerInfo.onUpdate end,
+								get = function(info) return module:GetBrokerInfo(name).onUpdate end,
 								order = 1
 							},
 							interval = {
@@ -148,10 +150,10 @@ function module:AddToOptions(name, brokerInfo)
 								bigStep = 0.1,
 								width = "full",
 								set = function(info, value)
-									brokerInfo.onUpdateInterval = value
+									module:GetBrokerInfo(name).onUpdateInterval = value
 									module:AddOrUpdateBroker(name)
 								end,
-								get = function(info) return brokerInfo.onUpdateInterval or 0.1 end,
+								get = function(info) return module:GetBrokerInfo(name).onUpdateInterval or 0.1 end,
 								order = 2
 							},
 						}
@@ -174,10 +176,10 @@ This script runs at the initialization of the broker. It will be called as funct
 						width = 'full',
 						multiline = 18,
 						set = function(info, value)
-							brokerInfo.initScript = value
+							module:GetBrokerInfo(name).initScript = value
 							module:AddOrUpdateBroker(name) -- this should trigger the init if needed
 						end,
-						get = function(info) return brokerInfo.initScript end,
+						get = function(info) return module:GetBrokerInfo(name).initScript end,
 						func = function() return getBrokerOrNull() end,
 						dialogControl = "BrokerAnythingLuaEditBox",
 						order = 2
@@ -202,8 +204,8 @@ This script runs on every event. It will be called as function(broker, event [, 
 						],
 						width = 'full',
 						multiline = 18,
-						set = function(info, value) brokerInfo.script = value end,
-						get = function(info) return brokerInfo.script end,
+						set = function(info, value) module:GetBrokerInfo(name).script = value end,
+						get = function(info) return module:GetBrokerInfo(name).script end,
 						func = function() return getBrokerOrNull(), "TestEvent" end,
 						dialogControl = "BrokerAnythingLuaEditBox",
 						order = 1
@@ -226,8 +228,8 @@ This script is called when the mouse is over the broker. It will be called as fu
 						],
 						width = 'full',
 						multiline = 18,
-						set = function(info, value) brokerInfo.tooltipScript = value end,
-						get = function(info) return brokerInfo.tooltipScript end,
+						set = function(info, value) module:GetBrokerInfo(name).tooltipScript = value end,
+						get = function(info) return module:GetBrokerInfo(name).tooltipScript end,
 						dialogControl = "BrokerAnythingLuaEditBox",
 						func = function() return GameTooltip end,
 						order = 1
@@ -248,8 +250,8 @@ This script is called when the mouse is over the broker. It will be called as fu
 This script is called when the broker is clicked.]]
 						],
 						width = 'full',
-						set = function(info, value) brokerInfo.clickScript = value end,
-						get = function(info) return brokerInfo.clickScript end,
+						set = function(info, value) module:GetBrokerInfo(name).clickScript = value end,
+						get = function(info) return module:GetBrokerInfo(name).clickScript end,
 						dialogControl = "BrokerAnythingLuaEditBox",
 						order = 1,
 					},
@@ -265,20 +267,31 @@ This script is called when the broker is clicked.]]
 						type = 'input',
 						name = L["Export"],
 						width = 'full',
-						multiline = 10,
+						multiline = 5,
 						get = function(info) return module:ExportBroker(name, true) end,
 						set = function(info, value) end,
-						order = 1,
+						order = 10,
 					},
 					import = {
 						type = 'input',
 						name = L["Import"],
 						width = 'full',
-						multiline = 10,
+						multiline = 5,
 						get = function(info) return end,
 						set = function(info, value) module:ImportBroker(name, value, true) end,
-						order = 1,
+						order = 20,
 					},
+					party = {
+						type = 'execute',
+						name = L["Link"],
+						desc = L["Click here to insert a link this broker in the chat!"],
+						func = function()
+							local link = Link:CreateBrokerLink(name, true)
+							local editBox = GetCurrentKeyBoardFocus()
+							editBox:Insert(link)
+						end,
+						order = 30,
+					}
 				}
 			},
 		}
