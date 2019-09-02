@@ -98,6 +98,12 @@ Este script é executado quando o broker é clicado.]]
 	L["Share"] = "Compartilhar"
 	L["Export"] = "Exportar"
 	L["Import"] = "Importar"
+	L["BrokerAnything - Import"] = "BrokerAnything - Importar"
+	L["Name"] = "Nome"
+	L["Importing '${broker}' from '${char}'"] = "Importando '${broker}' de '${char}'"
+	L["Broker '${broker}' already exists!"] = "O Broker '${broker}' já existe!"
+	L["Link"] = "Link"
+	L["Click here to insert a link this broker in the chat!"] = "Clique aqui para inserir um link para esse broker no chat!"
 	--@end-debug@
 
 	return

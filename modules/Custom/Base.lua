@@ -94,16 +94,15 @@ end
 function module:AddOrUpdateBroker(name)
 	if (not name or not tostring(name)) then return end
 
-	self:GetBrokerInfo(name, {
+	local brokerInfo = self:GetBrokerInfo(name, {
 		events = {},
 		initScript = defaultInit,
 		script = defaultOnEvent,
 		tooltipScript = defaultOnTooltip,
 		clickScript = defaultOnClick
 	})
-	local brokerInfo = self:GetBrokerInfo(name)
 
-	self:AddToOptions(name, brokerInfo)
+	self:AddToOptions(name)
 
 	if brokerInfo.enable then
 		self:EnableBroker(name)
@@ -237,6 +236,12 @@ function module:SetBrokerInfo(name, value)
 	self.db.profile.brokers[name] = value
 end
 
+function module:BrokerInfoGetVar(name, varName, default)
+	local brokerInfo = self:GetBrokerInfo(name)
+	brokerInfo[varName] = brokerInfo[varName] or default
+	return brokerInfo[varName]
+end
+
 function module:CompressAndEncodeData(dataTable, isForPrint)
 	local serializedData = self:Serialize(dataTable)
 	local compressedData = LibDeflate:CompressDeflate(serializedData)
@@ -281,11 +286,7 @@ function module:ImportBroker(name, value, isForPrint)
 
 	brokerInfoToImport.enable = false
 
-	local brokerInfo = self:GetBrokerInfo(name) or {}
-	wipe(brokerInfo)
-	for k, v in pairs(brokerInfoToImport) do
-		brokerInfo[k] = v
-	end
+	self:SetBrokerInfo(name, brokerInfoToImport)
 
 	module:AddOrUpdateBroker(name)
 
