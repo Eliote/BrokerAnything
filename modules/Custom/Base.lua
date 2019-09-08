@@ -30,7 +30,10 @@ tooltip:AddLine("BrokerAnything!")
 tooltip:Show()
 
 ]]
-local defaultOnClick = 'LibStub("AceConfigDialog-3.0"):Open("BrokerAnything")\n\n'
+local defaultOnClick = [[local self, button = ...
+local BrokerAnything = LibStub("AceAddon-3.0"):GetAddon("BrokerAnything")
+BrokerAnything.DefaultOnClick(self, button)
+]]
 
 local function errorhandler(name)
 	return function(err) geterrorhandler()(name .. " " .. err) end
