@@ -100,7 +100,8 @@ function module:AddBroker(itemID)
 
 				tooltip:Show()
 			end,
-			OnClick = BrokerAnything.DefaultOnClick
+			OnClick = BrokerAnything.DefaultOnClick,
+			configPath = { "item" }
 		})
 
 		if (not brokerTable.broker) then
@@ -126,7 +127,7 @@ function module:GetOptions()
 			args = {
 				info = {
 					type = "header",
-					name = L["You can drag & drop items here!"] ,
+					name = L["You can drag & drop items here!"],
 					hidden = true,
 					dialogHidden = false,
 					order = 0
