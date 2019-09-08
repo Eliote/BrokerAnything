@@ -121,7 +121,8 @@ function module:EnableBroker(name)
 		label = L["BA (custom) - "] .. name,
 		name = Colors.WHITE .. name .. "|r",
 		OnTooltipShow = function(...) runScript(brokerInfo.tooltipScript, name .. "_Tooltip", ...) end,
-		OnClick = function(...) runScript(brokerInfo.clickScript, name .. "_Click", ...) end
+		OnClick = function(...) runScript(brokerInfo.clickScript, name .. "_Click", ...) end,
+		configPath = { "custom", self:GetOptionName(name) }
 	})
 
 	if (not broker) then
