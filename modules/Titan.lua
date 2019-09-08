@@ -20,7 +20,7 @@ local function createTitanOption(id, text, var)
 	}
 end
 
-local function createMenu(id, name)
+function module:CreateMenu(id, name)
 	local menu = {
 		{ text = name, notCheckable = true, notClickable = true, isTitle = 1 },
 		createTitanOption(id, L["TITAN_PANEL_MENU_SHOW_ICON"], "ShowIcon"),
@@ -36,13 +36,16 @@ local function createMenu(id, name)
 	L_EasyMenu(menu, dropdownFrame, "cursor", 0, 0, "MENU");
 end
 
-BrokerAnything.CreateOnClick = function(_, id, name)
-	return function(registry, button)
-		-- just to make sure it's a Titan Button
-		if registry and registry.registry and registry.registry.controlVariables then
-			if (button == "RightButton") then
-				createMenu(id, name)
-			end
+local CreateOnClick = BrokerAnything.DefaultOnClick
+BrokerAnything.DefaultOnClick = function(registry, button, ...)
+	CreateOnClick(registry, button, ...)
+
+	-- just to make sure it's a Titan Button
+	if registry and registry.registry and registry.registry.id and registry.registry.controlVariables then
+		if (button == "RightButton") then
+			local id = registry.registry.id
+			local title = registry.registry.menuText or ""
+			module:CreateMenu(id, title)
 		end
 	end
 end
