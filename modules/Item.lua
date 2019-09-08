@@ -1,6 +1,7 @@
 local ADDON_NAME, _ = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
+---@type BrokerAnything
 local BrokerAnything = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
 local module = BrokerAnything:NewModule("ItemModule", "AceEvent-3.0")
 local Colors = BrokerAnything.Colors
@@ -74,11 +75,12 @@ function module:AddBroker(itemID)
 		local itemColor = ITEM_QUALITY_COLORS[itemRarity].hex
 
 		local brokerName = "BrokerAnything_Item_" .. itemID
+		local name = itemColor .. itemName .. "|r"
 		brokerTable.broker = LibStub("LibDataBroker-1.1"):NewDataObject(brokerName, {
 			type = "data source",
 			icon = itemIcon or "Interface\\Icons\\INV_Misc_QuestionMark",
 			label = L["BA (item) - "] .. itemName,
-			name = itemColor .. itemName .. "|r",
+			name = name,
 			OnTooltipShow = function(tooltip)
 				tooltip:SetHyperlink(itemLink)
 
@@ -98,7 +100,7 @@ function module:AddBroker(itemID)
 
 				tooltip:Show()
 			end,
-			OnClick = function() end
+			OnClick = BrokerAnything:CreateOnClick(brokerName, name)
 		})
 
 		if (not brokerTable.broker) then

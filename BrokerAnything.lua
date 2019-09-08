@@ -1,5 +1,6 @@
 local ADDON_NAME, _ = ...
 
+---@class BrokerAnything
 local BrokerAnything = LibStub("AceAddon-3.0"):NewAddon(ADDON_NAME, "AceEvent-3.0")
 
 BrokerAnything.Colors = {
@@ -59,4 +60,8 @@ function BrokerAnything:FormatBalance(value, tooltip)
 		end
 		return " " .. Colors.WHITE .. "[" .. text .. Colors.WHITE .. "]"
 	end
+end
+
+function BrokerAnything:CreateOnClick(id, name)
+
 end
