@@ -100,7 +100,7 @@ function module:AddBroker(itemID)
 
 				tooltip:Show()
 			end,
-			OnClick = BrokerAnything:CreateOnClick(brokerName, name)
+			OnClick = BrokerAnything.DefaultOnClick
 		})
 
 		if (not brokerTable.broker) then

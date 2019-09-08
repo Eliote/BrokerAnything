@@ -62,6 +62,4 @@ function BrokerAnything:FormatBalance(value, tooltip)
 	end
 end
 
-function BrokerAnything:CreateOnClick(id, name)
-
-end
+function BrokerAnything.DefaultOnClick() end
