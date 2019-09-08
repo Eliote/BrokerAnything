@@ -77,6 +77,7 @@ function module:AddBroker(itemID)
 		local brokerName = "BrokerAnything_Item_" .. itemID
 		local name = itemColor .. itemName .. "|r"
 		brokerTable.broker = LibStub("LibDataBroker-1.1"):NewDataObject(brokerName, {
+			id = brokerName,
 			type = "data source",
 			icon = itemIcon or "Interface\\Icons\\INV_Misc_QuestionMark",
 			label = L["BA (item) - "] .. itemName,
@@ -101,7 +102,8 @@ function module:AddBroker(itemID)
 				tooltip:Show()
 			end,
 			OnClick = BrokerAnything.DefaultOnClick,
-			configPath = { "item" }
+			configPath = { "item" },
+			category = L["Item"]
 		})
 
 		if (not brokerTable.broker) then

@@ -65,6 +65,7 @@ function module:AddBroker(currencyId)
 
 	local brokerName = "BrokerAnything_Currency_" .. currencyId
 	brokerTable.broker = LibStub("LibDataBroker-1.1"):NewDataObject(brokerName, {
+		id = brokerName,
 		type = "data source",
 		icon = icon or "Interface\\Icons\\INV_Misc_QuestionMark",
 		label = L["BA (currency) - "] .. currencyName or currencyId,
@@ -88,7 +89,9 @@ function module:AddBroker(currencyId)
 
 			tooltip:Show()
 		end,
-		OnClick = function() end
+		OnClick = BrokerAnything.DefaultOnClick,
+		configPath = { "currency" },
+		category = L["Currency"]
 	})
 
 	if (not brokerTable.broker) then
