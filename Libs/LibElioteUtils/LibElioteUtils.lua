@@ -80,3 +80,13 @@ function ElioteUtils.memoize (f)
 		return r
 	end
 end
+
+---
+--- Find if the array contains an object
+---@param arr table
+---@return boolean
+function ElioteUtils.contains(arr, object)
+	for i, v in pairs(arr) do
+		if (object == v) then return true end
+	end
+end
