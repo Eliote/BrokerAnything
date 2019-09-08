@@ -4,6 +4,7 @@
 ## Author: Eliote
 ## Version: @project-version@
 ## SavedVariables: BrokerAnythingDB
+## OptionalDeps: Titan
 
 Libs\embeds.xml
 Font\Fonts.xml
@@ -21,3 +22,4 @@ modules\Broker.lua
 modules\Currency.lua
 modules\Custom\module.xml
 modules\Item.lua
+modules\Titan.lua
