@@ -1,6 +1,6 @@
 local AceGUI = LibStub("AceGUI-3.0")
 
-local Type = "SearchEditBox_Base"
+local Type = "SearchEditBox_Base-Eliote"
 local Version = 1
 local PREDICTOR_ROWS = 15
 local predictorBackdrop = {
@@ -269,8 +269,16 @@ local function EditBox_OnEnterPressed(this)
 	this:SetFocus()
 end
 
+local function hidePredictor(this)
+	local predictor = this.obj.predictor
+	if predictor:IsVisible() then
+		predictor:Hide()
+	end
+end
+
 local function EditBox_OnEscapePressed(this)
 	this:ClearFocus()
+	hidePredictor(this)
 end
 
 local function EditBox_OnReceiveDrag(this)
@@ -283,6 +291,7 @@ local function EditBox_OnReceiveDrag(this)
 	end
 	HideButton(obj)
 	AceGUI:ClearFocus()
+	hidePredictor(this)
 end
 
 local function EditBox_OnTextChanged(this)
@@ -295,12 +304,6 @@ local function EditBox_OnTextChanged(this)
 	end
 end
 
-local function EditBox_OnEditFocusLost(self)
-	local predictor = self.obj.predictor
-	if predictor:IsVisible() then
-		predictor:Hide()
-	end	
-end
 
 local function EditBox_OnEditFocusGained(self)
 	local obj = self.obj
@@ -405,7 +408,6 @@ local function Constructor()
 	editBox:SetScript("OnReceiveDrag", EditBox_OnReceiveDrag)
 	editBox:SetScript("OnMouseDown", EditBox_OnReceiveDrag)
 	editBox:SetScript("OnEditFocusGained", EditBox_OnEditFocusGained)
-	editBox:SetScript("OnEditFocusLost", EditBox_OnEditFocusLost)
 	editBox:SetTextInsets(0, 0, 3, 3)
 	editBox:SetMaxLetters(256)
 	editBox:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 6, 0)

@@ -1,4 +1,4 @@
-local Completing = LibStub("AceGUI-3.0-Search-EditBox")
+local Completing = LibStub("AceGUI-3.0-Search-EditBox-Eliote")
 local Predictor = {}
 
 local ElioteUtils = LibStub("LibElioteUtils-1.0")
