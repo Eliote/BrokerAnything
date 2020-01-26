@@ -310,8 +310,16 @@ do
 		this:SetFocus()
 	end
 
+	local function hidePredictor(this)
+		local predictor = this.obj.predictor
+		if predictor:IsVisible() then
+			predictor:Hide()
+		end
+	end
+
 	local function EditBox_OnEscapePressed(this)
 		this:ClearFocus()
+		hidePredictor(this)
 	end
 
 	local function EditBox_OnReceiveDrag(frame)
@@ -331,6 +339,7 @@ do
 			ClearCursor()
 			HideButton(self)
 			AceGUI:ClearFocus()
+			hidePredictor(this)
 		end
 	end
 
@@ -341,13 +350,6 @@ do
 			obj:Fire("OnTextChanged", value)
 			obj.lastText = value
 			ShowButton(obj)
-		end
-	end
-
-	local function EditBox_OnEditFocusLost(self)
-		local predictor = self.obj.predictor
-		if predictor:IsVisible() then
-			predictor:Hide()
 		end
 	end
 
@@ -454,7 +456,6 @@ do
 		editBox:SetScript("OnReceiveDrag", EditBox_OnReceiveDrag)
 		editBox:SetScript("OnMouseDown", EditBox_OnReceiveDrag)
 		editBox:SetScript("OnEditFocusGained", EditBox_OnEditFocusGained)
-		editBox:SetScript("OnEditFocusLost", EditBox_OnEditFocusLost)
 		editBox:SetTextInsets(0, 0, 3, 3)
 		editBox:SetMaxLetters(256)
 		editBox:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 6, 0)
