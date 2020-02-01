@@ -2,6 +2,7 @@ local ADDON_NAME, _ = ...
 
 ---@class BrokerAnything
 local BrokerAnything = LibStub("AceAddon-3.0"):NewAddon(ADDON_NAME, "AceEvent-3.0")
+local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 
 BrokerAnything.Colors = {
 	WHITE = "|cFFFFFFFF",
@@ -63,3 +64,7 @@ function BrokerAnything:FormatBalance(value, tooltip)
 end
 
 function BrokerAnything.DefaultOnClick() end
+
+function BrokerAnything:FormatBoolean(b)
+	if b then return L["Yes"] else return L["No"] end
+end

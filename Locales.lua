@@ -104,6 +104,13 @@ Este script é executado quando o broker é clicado.]]
 	L["Broker '${broker}' already exists!"] = "O Broker '${broker}' já existe!"
 	L["Link"] = "Link"
 	L["Click here to insert a link this broker in the chat!"] = "Clique aqui para inserir um link para esse broker no chat!"
+	L["Yes"] = "Sim"
+	L["No"] = "Não"
+	L["Has Reward Pending!"] = "Possui recompensa pendente!"
+	L["Standing:"] = "Situação atual:"
+	L["Reputation:"] = "Reputação:"
+	L["At war:"] = "Em Guerra"
+	L["Reputation"] = "Reputação"
 	--@end-debug@
 
 	return
