@@ -22,6 +22,17 @@ local function mergeTable(t1, t2)
 end
 ElioteUtils.mergeTable = mergeTable
 
+---
+--- Concatenates the array [t2] in the array [t1] and returns [t1].
+---@param t1 table
+---@param t2 table
+---@return table
+function ElioteUtils.arrayConcat(t1, t2)
+	for i = 1, #t2 do
+		t1[#t1 + 1] = t2[i]
+	end
+	return t1
+end
 
 ---
 --- If [itemLinkOrId] is a number it will simply return it

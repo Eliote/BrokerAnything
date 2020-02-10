@@ -111,6 +111,8 @@ Este script é executado quando o broker é clicado.]]
 	L["Reputation:"] = "Reputação:"
 	L["At war:"] = "Em Guerra"
 	L["Reputation"] = "Reputação"
+	L["Show value"] = "Mostrar valor"
+	L["Hide maximun"] = "Esconder máximo"
 	--@end-debug@
 
 	return

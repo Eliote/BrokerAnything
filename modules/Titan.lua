@@ -12,8 +12,6 @@ local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 ---@type ElioteUtils
 local ElioteUtils = LibStub("LibElioteUtils-1.0")
 
-local dropdownFrame = CreateFrame("Frame", "BrokerAnythingTitan_MenuFrame", nil, "UIDropDownMenuTemplate")
-
 local function createTitanOption(id, text, var)
 	return {
 		text = text,
@@ -25,9 +23,17 @@ local function createTitanOption(id, text, var)
 	}
 end
 
-function module:CreateMenu(id, name)
-	local menu = {
-		{ text = name, notCheckable = true, notClickable = true, isTitle = 1 },
+function module:CreateMenu(menu, id, name)
+	local first = menu[1]
+	if (first == nil or not first.isTitle) then
+		table.insert(menu, 1, { text = name, notCheckable = true, notClickable = true, isTitle = 1 })
+	end
+
+	if (table.getn(menu) > 1) then
+		table.insert(menu, BrokerAnything.MenuSeparator)
+	end
+
+	local menuTitan = {
 		createTitanOption(id, L["TITAN_PANEL_MENU_SHOW_ICON"], "ShowIcon"),
 		createTitanOption(id, L["TITAN_PANEL_MENU_SHOW_LABEL_TEXT"], "ShowLabelText"),
 		{ text = "", notCheckable = true, notClickable = true, disabled = 1 },
@@ -38,19 +44,16 @@ function module:CreateMenu(id, name)
 		}
 	}
 
-	L_EasyMenu(menu, dropdownFrame, "cursor", 0, 0, "MENU");
+	ElioteUtils.arrayConcat(menu, menuTitan)
 end
 
-local CreateOnClick = BrokerAnything.DefaultOnClick
-BrokerAnything.DefaultOnClick = function(registry, button, ...)
-	CreateOnClick(registry, button, ...)
-
+local OnClick = function(menu, registry, button, ...)
 	-- just to make sure it's a Titan Button
 	if registry and registry.registry and registry.registry.id and registry.registry.controlVariables then
 		if (button == "RightButton") then
 			local id = registry.registry.id
 			local title = registry.registry.menuText or ""
-			module:CreateMenu(id, title)
+			module:CreateMenu(menu, id, title)
 		elseif (button == "LeftButton") then
 			local broker = LibStub("LibDataBroker-1.1"):GetDataObjectByName(registry.registry.id)
 			AceConfigDialog:Open(ADDON_NAME)
@@ -59,6 +62,10 @@ BrokerAnything.DefaultOnClick = function(registry, button, ...)
 			end
 		end
 	end
+end
+
+function module:OnEnable()
+	BrokerAnything:RegisterOnClick(OnClick)
 end
 
 local categories = LibStub("AceLocale-3.0"):GetLocale(TITAN_ID, true)["TITAN_PANEL_MENU_CATEGORIES"]

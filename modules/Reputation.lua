@@ -13,6 +13,16 @@ local brokers = {}
 module.brokers = brokers
 module.brokerTitle = L["Reputation"]
 
+---@class RepConfig
+---@field var
+---@field title
+
+---@type table<RepConfig>
+local configVariables = {
+	showValue = { title = L["Show value"] },
+	hideMax = { title = L["Hide maximun"] }
+}
+
 local icons = {
 	"inv_misc_note_01", "inv_misc_note_02", "inv_misc_note_03", "inv_misc_note_04", "inv_misc_note_05", "inv_misc_note_06",
 	"inv_misc_noteblank1a", "inv_misc_noteblank1b", "inv_misc_noteblank1c",
@@ -102,6 +112,42 @@ local function getStandColor(standingId)
 	end
 
 	return "|cFF00FF00"
+end
+
+---@param config RepConfig
+local function createMenu(id)
+	local ret = {}
+	for k, v in pairs(configVariables) do
+		table.insert(ret, {
+			text = v.title,
+			func = function()
+				module.db.profile.ids[id][k] = not module.db.profile.ids[id][k]
+				updateBroker(brokers[id])
+			end,
+			checked = module.db.profile.ids[id][k],
+			keepShownOnClick = 1
+		})
+	end
+
+	return ret
+end
+
+local function createOptions(id)
+	local ret = {}
+	for k, v in pairs(configVariables) do
+		print(k)
+		ret[k] = {
+			name = v.title,
+			type = "toggle",
+			set = function(info, val)
+				module.db.profile.ids[id][k] = val
+				updateBroker(brokers[id])
+			end,
+			get = function(info) return module.db.profile.ids[id][k] end
+		}
+	end
+
+	return ret
 end
 
 function module:OnEnable()
@@ -219,7 +265,11 @@ function module:AddBroker(factionId)
 
 				tooltip:Show()
 			end,
-			OnClick = BrokerAnything.DefaultOnClick,
+			OnClick = BrokerAnything:CreateOnClick(
+					function(...)
+						return createMenu(factionId)
+					end
+			),
 			configPath = { "reputation" },
 			category = L["Reputation"]
 		})
@@ -231,10 +281,17 @@ function module:AddBroker(factionId)
 	end
 
 	brokers[factionId] = brokerTable
-	module.db.profile.ids[factionId] = {
-		name = repName,
-		icon = icon
-	}
+	local db = module.db.profile.ids[factionId]
+	if not db then
+		db = {}
+		module.db.profile.ids[factionId] = db
+	end
+	db.name = repName
+	db.icon = icon
+	db.showValue = db.showValue or true
+	db.hideMax = db.hideMax or false
+
+	module:AddOption(factionId)
 
 	updateBroker(brokerTable)
 end
@@ -287,8 +344,8 @@ function module:GetButtonText(factionId)
 	local text = "" .. color
 
 	-- TODO: Add in game config
-	local showvalue = true
-	local hideMax = false
+	local showvalue = module.db.profile.ids[factionId].showValue
+	local hideMax = module.db.profile.ids[factionId].hideMax
 	if showvalue then
 		text = text .. value
 
@@ -318,47 +375,65 @@ function module:GetButtonText(factionId)
 	return text
 end
 
-function module:GetOptions()
-	return {
-		reputation = {
-			type = 'group',
-			name = L["Reputation"],
-			args = {
-				add = {
-					type = 'input',
-					name = L["Add"],
-					width = 'full',
-					set = function(info, value)
-						module:AddBroker(ElioteUtils.getId(value))
-					end,
-					get = false,
-					order = 1,
-					dialogControl = "EditBoxReputation_BrokerAnything"
-				},
-				remove = {
-					type = 'select',
-					name = L["Remove"],
-					width = 'full',
-					set = function(info, value)
-						module.db.profile.ids[value] = nil
-						brokers[value].broker.value = nil
-						brokers[value].broker.text = L["Reload UI!"]
-						brokers[value] = nil
-						print(L["Reload UI to take effect!"])
-					end,
-					get = function(info) end,
-					values = function()
-						local values = {}
+local options = {
+	reputation = {
+		type = 'group',
+		name = L["Reputation"],
+		args = {
+			add = {
+				type = 'input',
+				name = L["Add"],
+				width = 'full',
+				set = function(info, value)
+					module:AddBroker(ElioteUtils.getId(value))
+				end,
+				get = false,
+				order = 1,
+				dialogControl = "EditBoxReputation_BrokerAnything"
+			},
+			remove = {
+				type = 'select',
+				name = L["Remove"],
+				width = 'full',
+				set = function(info, value)
+					module.db.profile.ids[value] = nil
+					module:RemoveOption(value)
+					brokers[value].broker.value = nil
+					brokers[value].broker.text = L["Reload UI!"]
+					brokers[value] = nil
+					print(L["Reload UI to take effect!"])
+				end,
+				get = function(info) end,
+				values = function()
+					local values = {}
 
-						for id, faction in pairs(module.db.profile.ids) do
-							values[id] = ElioteUtils.getTexture(faction.icon) .. faction.name .. " |cFFAAAAAA(id:" .. id .. ")|r"
-						end
+					for id, faction in pairs(module.db.profile.ids) do
+						values[id] = ElioteUtils.getTexture(faction.icon) .. faction.name .. " |cFFAAAAAA(id:" .. id .. ")|r"
+					end
 
-						return values
-					end,
-					order = 2
-				}
+					return values
+				end,
+				order = 2
 			}
-		},
+		}
 	}
+}
+
+function module:GetOptions()
+	return options
+end
+
+function module:AddOption(id)
+	local args = options.reputation.args
+
+	args[tostring(id)] = {
+		type = 'group',
+		name = module.db.profile.ids[id].name,
+		args = createOptions(id)
+
+	}
+end
+
+function module:RemoveOption(id)
+	options.reputation.args[tostring(id)] = nil
 end

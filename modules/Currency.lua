@@ -1,6 +1,7 @@
 local ADDON_NAME, _ = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
+---@type BrokerAnything
 local BrokerAnything = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
 local module = BrokerAnything:NewModule("CurrencyModule", "AceEvent-3.0")
 local Colors = BrokerAnything.Colors
@@ -89,7 +90,7 @@ function module:AddBroker(currencyId)
 
 			tooltip:Show()
 		end,
-		OnClick = BrokerAnything.DefaultOnClick,
+		OnClick = module.OnClick,
 		configPath = { "currency" },
 		category = L["Currency"]
 	})
@@ -104,6 +105,8 @@ function module:AddBroker(currencyId)
 
 	updateBroker(brokerTable)
 end
+
+module.OnClick = BrokerAnything:CreateOnClick()
 
 function module:GetOptions()
 	return {

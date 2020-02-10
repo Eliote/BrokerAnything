@@ -14,6 +14,33 @@ BrokerAnything.Colors = {
 
 local Colors = BrokerAnything.Colors
 
+BrokerAnything.MenuSeparator = {
+	text = "", -- required!
+	hasArrow = false,
+	dist = 0,
+	isTitle = true,
+	isUninteractable = true,
+	notCheckable = true,
+	iconOnly = true,
+	icon = "Interface\\Common\\UI-TooltipDivider-Transparent",
+	tCoordLeft = 0,
+	tCoordRight = 1,
+	tCoordTop = 0,
+	tCoordBottom = 1,
+	tSizeX = 0,
+	tSizeY = 8,
+	tFitDropDownSizeX = true,
+	iconInfo = {
+		tCoordLeft = 0,
+		tCoordRight = 1,
+		tCoordTop = 0,
+		tCoordBottom = 1,
+		tSizeX = 0,
+		tSizeY = 8,
+		tFitDropDownSizeX = true
+	},
+}
+
 function BrokerAnything:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("BrokerAnythingDB", {}, "Default")
 
@@ -63,7 +90,46 @@ function BrokerAnything:FormatBalance(value, tooltip)
 	end
 end
 
-function BrokerAnything.DefaultOnClick() end
+local registeredClicks = {}
+local dropdownFrame = CreateFrame("Frame", "BrokerAnythingTitan_MenuFrame", nil, "UIDropDownMenuTemplate")
+function BrokerAnything:RegisterOnClick(onClick)
+	table.insert(registeredClicks, onClick)
+end
+
+function BrokerAnything:UnregisterOnClick(onClick)
+	for i, v in ipairs(registeredClicks) do
+		if (onClick == v) then
+			table.remove(registeredClicks, i)
+		end
+	end
+end
+
+function BrokerAnything:CreateOnClick(onClick)
+	return function(...)
+		local menu
+		local type = type(onClick)
+		if (type == "function") then
+			menu = onClick(...)
+		else
+			menu = {}
+		end
+
+		for _, v in ipairs(registeredClicks) do
+			v(menu, ...)
+		end
+
+		table.insert(menu, BrokerAnything.MenuSeparator)
+		table.insert(menu, {
+			notCheckable = true,
+			text = CANCEL,
+			keepShownOnClick = false
+		})
+
+		L_EasyMenu(menu, dropdownFrame, "cursor", 0, 0, "MENU")
+	end
+end
+
+BrokerAnything.DefaultOnClick = BrokerAnything:CreateOnClick()
 
 function BrokerAnything:FormatBoolean(b)
 	if b then return L["Yes"] else return L["No"] end

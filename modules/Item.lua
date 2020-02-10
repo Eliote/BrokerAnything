@@ -101,7 +101,7 @@ function module:AddBroker(itemID)
 
 				tooltip:Show()
 			end,
-			OnClick = BrokerAnything.DefaultOnClick,
+			OnClick = module.OnClick,
 			configPath = { "item" },
 			category = L["Item"]
 		})
@@ -120,6 +120,8 @@ function module:AddBroker(itemID)
 		updateBroker(brokerTable)
 	end)
 end
+
+module.OnClick = BrokerAnything:CreateOnClick()
 
 function module:GetOptions()
 	return {
