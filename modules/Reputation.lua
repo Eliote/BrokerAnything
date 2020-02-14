@@ -135,7 +135,6 @@ end
 local function createOptions(id)
 	local ret = {}
 	for k, v in pairs(configVariables) do
-		print(k)
 		ret[k] = {
 			name = v.title,
 			type = "toggle",
