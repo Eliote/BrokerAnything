@@ -113,6 +113,7 @@ Este script é executado quando o broker é clicado.]]
 	L["Reputation"] = "Reputação"
 	L["Show value"] = "Mostrar valor"
 	L["Hide maximun"] = "Esconder máximo"
+	L["Show balance"] = "Mostrar saldo"
 	--@end-debug@
 
 	return

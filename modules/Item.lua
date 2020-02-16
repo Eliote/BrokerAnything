@@ -11,10 +11,17 @@ local brokers = {}
 module.brokers = brokers
 module.brokerTitle = L["Item"]
 
+local configVariables = {
+	showBalance = { title = L["Show balance"] }
+}
+
 local function updateBroker(brokerTable)
 	local itemCount = GetItemCount(brokerTable.id, true)
 
-	local balance = BrokerAnything:FormatBalance(GetItemCount(brokerTable.id, true) - brokerTable.sessionStart)
+	local balance = ""
+	if (module.db.profile.ids[brokerTable.id].showBalance) then
+		balance = BrokerAnything:FormatBalance(GetItemCount(brokerTable.id, true) - brokerTable.sessionStart)
+	end
 
 	brokerTable.broker.value = itemCount
 	brokerTable.broker.text = itemCount .. balance
@@ -101,7 +108,11 @@ function module:AddBroker(itemID)
 
 				tooltip:Show()
 			end,
-			OnClick = module.OnClick,
+			OnClick = BrokerAnything:CreateOnClick(
+					function(...)
+						return BrokerAnything:CreateMenu(configVariables, module.db, "ids", itemID, module.OnOptionChanged)
+					end
+			),
 			configPath = { "item" },
 			category = L["Item"]
 		})
@@ -112,65 +123,90 @@ function module:AddBroker(itemID)
 		end
 
 		brokers[itemID] = brokerTable
-		module.db.profile.ids[itemID] = {
-			link = itemLink,
-			icon = itemIcon
-		}
 
+		local db = module.db.profile.ids[itemID] or {}
+		module.db.profile.ids[itemID] = db
+		db.link = itemLink
+		db.icon = itemIcon
+		db.showBalance = BrokerAnything:DefaultIfNull(db.showBalance, true)
+
+		module:AddOption(itemID)
 		updateBroker(brokerTable)
 	end)
 end
 
 module.OnClick = BrokerAnything:CreateOnClick()
 
-function module:GetOptions()
-	return {
-		item = {
-			type = 'group',
-			name = L["Item"],
-			args = {
-				info = {
-					type = "header",
-					name = L["You can drag & drop items here!"],
-					hidden = true,
-					dialogHidden = false,
-					order = 0
-				},
-				add = {
-					type = 'input',
-					name = L["Add"],
-					width = 'full',
-					set = function(info, value)
-						module:AddBroker(ElioteUtils.getId(value))
-					end,
-					get = false,
-					order = 1,
-					dialogControl = "EditBoxItem_BrokerAnything"
-				},
-				remove = {
-					type = 'select',
-					name = L["Remove"],
-					width = 'full',
-					set = function(info, value)
-						module.db.profile.ids[value] = nil
-						brokers[value].broker.value = nil
-						brokers[value].broker.text = L["Reload UI!"]
-						brokers[value] = nil
-						print(L["Reload UI to take effect!"])
-					end,
-					get = function(info) end,
-					values = function()
-						local values = {}
+local options = {
+	item = {
+		type = 'group',
+		name = L["Item"],
+		args = {
+			info = {
+				type = "header",
+				name = L["You can drag & drop items here!"],
+				hidden = true,
+				dialogHidden = false,
+				order = 0
+			},
+			add = {
+				type = 'input',
+				name = L["Add"],
+				width = 'full',
+				set = function(info, value)
+					module:AddBroker(ElioteUtils.getId(value))
+				end,
+				get = false,
+				order = 1,
+				dialogControl = "EditBoxItem_BrokerAnything"
+			},
+			remove = {
+				type = 'select',
+				name = L["Remove"],
+				width = 'full',
+				set = function(info, value)
+					module.db.profile.ids[value] = nil
+					module:RemoveOption(value)
+					brokers[value].broker.value = nil
+					brokers[value].broker.text = L["Reload UI!"]
+					brokers[value] = nil
+					print(L["Reload UI to take effect!"])
+				end,
+				get = function(info) end,
+				values = function()
+					local values = {}
 
-						for id, item in pairs(module.db.profile.ids) do
-							values[id] = ElioteUtils.getTexture(item.icon) .. item.link .. " |cFFAAAAAA(id:" .. id .. ")|r"
-						end
+					for id, item in pairs(module.db.profile.ids) do
+						values[id] = ElioteUtils.getTexture(item.icon) .. item.link .. " |cFFAAAAAA(id:" .. id .. ")|r"
+					end
 
-						return values
-					end,
-					order = 2
-				}
+					return values
+				end,
+				order = 2
 			}
-		},
+		}
+	},
+}
+
+function module:GetOptions()
+	return options
+end
+
+function module:AddOption(id)
+	local args = options.item.args
+
+	args[tostring(id)] = {
+		type = 'group',
+		name = module.db.profile.ids[id].link,
+		icon = module.db.profile.ids[id].icon,
+		args = BrokerAnything:CreateOptions(configVariables, module.db, "ids", id, module.OnOptionChanged)
 	}
+end
+
+function module:RemoveOption(id)
+	options.item.args[tostring(id)] = nil
+end
+
+function module:OnOptionChanged()
+	updateBroker(brokers[self])
 end
