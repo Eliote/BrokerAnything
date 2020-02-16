@@ -134,3 +134,49 @@ BrokerAnything.DefaultOnClick = BrokerAnything:CreateOnClick()
 function BrokerAnything:FormatBoolean(b)
 	if b then return L["Yes"] else return L["No"] end
 end
+
+---@class SimpleConfigTable
+---@field var string
+---@field title string
+
+---@param variables table<any, SimpleConfigTable>
+---@param db table
+---@param profileKey string
+---@param id string
+---@param onOptionChange function
+function BrokerAnything:CreateMenu(variables, db, profileKey, id, onOptionChange)
+	local ret = {}
+	for k, v in pairs(variables) do
+		table.insert(ret, {
+			text = v.title,
+			func = function()
+				db.profile[profileKey][id][k] = not db.profile[profileKey][id][k]
+				if onOptionChange then onOptionChange(id) end
+			end,
+			checked = db.profile[profileKey][id][k],
+			keepShownOnClick = 1
+		})
+	end
+	return ret
+end
+
+---@param variables table<SimpleConfigTable>
+---@param db table
+---@param profileKey string
+---@param id string
+---@param onOptionChange function
+function BrokerAnything:CreateOptions(variables, db, profileKey, id, onOptionChange)
+	local ret = {}
+	for k, v in pairs(variables) do
+		ret[k] = {
+			name = v.title,
+			type = "toggle",
+			set = function(info, val)
+				db.profile[profileKey][id][k] = val
+				if onOptionChange then onOptionChange(id) end
+			end,
+			get = function(info) return db.profile[profileKey][id][k] end
+		}
+	end
+	return ret
+end

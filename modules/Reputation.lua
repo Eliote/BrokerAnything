@@ -13,11 +13,7 @@ local brokers = {}
 module.brokers = brokers
 module.brokerTitle = L["Reputation"]
 
----@class RepConfig
----@field var
----@field title
-
----@type table<RepConfig>
+---@type table<string, SimpleConfigTable>
 local configVariables = {
 	showValue = { title = L["Show value"] },
 	hideMax = { title = L["Hide maximun"] }
@@ -114,39 +110,8 @@ local function getStandColor(standingId)
 	return "|cFF00FF00"
 end
 
----@param config RepConfig
-local function createMenu(id)
-	local ret = {}
-	for k, v in pairs(configVariables) do
-		table.insert(ret, {
-			text = v.title,
-			func = function()
-				module.db.profile.ids[id][k] = not module.db.profile.ids[id][k]
-				updateBroker(brokers[id])
-			end,
-			checked = module.db.profile.ids[id][k],
-			keepShownOnClick = 1
-		})
-	end
-
-	return ret
-end
-
-local function createOptions(id)
-	local ret = {}
-	for k, v in pairs(configVariables) do
-		ret[k] = {
-			name = v.title,
-			type = "toggle",
-			set = function(info, val)
-				module.db.profile.ids[id][k] = val
-				updateBroker(brokers[id])
-			end,
-			get = function(info) return module.db.profile.ids[id][k] end
-		}
-	end
-
-	return ret
+local function onOptionChanged(id)
+	updateBroker(brokers[id])
 end
 
 function module:OnEnable()
@@ -266,7 +231,7 @@ function module:AddBroker(factionId)
 			end,
 			OnClick = BrokerAnything:CreateOnClick(
 					function(...)
-						return createMenu(factionId)
+						return BrokerAnything:CreateMenu(configVariables, module.db, "ids", factionId, onOptionChanged)
 					end
 			),
 			configPath = { "reputation" },
@@ -428,7 +393,7 @@ function module:AddOption(id)
 	args[tostring(id)] = {
 		type = 'group',
 		name = module.db.profile.ids[id].name,
-		args = createOptions(id)
+		args = BrokerAnything:CreateOptions(configVariables, module.db, "ids", id, onOptionChanged) -- createOptions(id)
 
 	}
 end
