@@ -11,9 +11,17 @@ local brokers = {}
 module.brokers = brokers
 module.brokerTitle = L["Currency"]
 
+local configVariables = {
+	showBalance = { title = L["Show balance"] }
+}
+
 local function updateBroker(brokerTable)
 	local _, currencyAmount = GetCurrencyInfo(brokerTable.id)
-	local balance = BrokerAnything:FormatBalance(currencyAmount - brokerTable.sessionStart)
+
+	local balance = ""
+	if (module.db.profile.ids[brokerTable.id].showBalance) then
+		balance = BrokerAnything:FormatBalance(currencyAmount - brokerTable.sessionStart)
+	end
 
 	brokerTable.broker.value = currencyAmount
 	brokerTable.broker.text = currencyAmount .. balance
@@ -90,7 +98,11 @@ function module:AddBroker(currencyId)
 
 			tooltip:Show()
 		end,
-		OnClick = module.OnClick,
+		OnClick = BrokerAnything:CreateOnClick(
+				function(...)
+					return BrokerAnything:CreateMenu(configVariables, module.db, "ids", currencyId, module.OnOptionChanged)
+				end
+		),
 		configPath = { "currency" },
 		category = L["Currency"]
 	})
@@ -101,63 +113,96 @@ function module:AddBroker(currencyId)
 	end
 
 	brokers[currencyId] = brokerTable
-	module.db.profile.ids[currencyId] = true
 
+	local db = module.db.profile.ids[currencyId]
+	-- the old version of this table was a simple boolean
+	if db == nil or db == true then
+		db = {}
+	end
+	module.db.profile.ids[currencyId] = db
+
+	db.name = currencyName
+	db.icon = icon
+	db.showBalance = BrokerAnything:DefaultIfNull(db.showBalance, true)
+
+	module:AddOption(currencyId)
 	updateBroker(brokerTable)
 end
 
 module.OnClick = BrokerAnything:CreateOnClick()
 
-function module:GetOptions()
-	return {
-		currency = {
-			type = 'group',
-			name = L["Currency"],
-			args = {
-				info = {
-					type = "header",
-					name = L["You can drag & drop items here!"],
-					hidden = true,
-					dialogHidden = false,
-					order = 0
-				},
-				add = {
-					type = 'input',
-					name = L["Add"],
-					width = 'full',
-					set = function(info, value)
-						module:AddBroker(ElioteUtils.getId(value))
-					end,
-					get = false,
-					order = 1,
-					dialogControl = "EditBoxCurrency_BrokerAnything"
-				},
-				remove = {
-					type = 'select',
-					name = L["Remove"],
-					width = 'full',
-					set = function(info, value)
-						module.db.profile.ids[value] = nil
-						brokers[value].broker.value = nil
-						brokers[value].broker.text = L["Reload UI!"]
-						brokers[value] = nil
-						print(L["Reload UI to take effect!"])
-					end,
-					get = function(info) end,
-					values = function()
-						local values = {}
+local options = {
+	currency = {
+		type = 'group',
+		name = L["Currency"],
+		args = {
+			info = {
+				type = "header",
+				name = L["You can drag & drop items here!"],
+				hidden = true,
+				dialogHidden = false,
+				order = 0
+			},
+			add = {
+				type = 'input',
+				name = L["Add"],
+				width = 'full',
+				set = function(info, value)
+					module:AddBroker(ElioteUtils.getId(value))
+				end,
+				get = false,
+				order = 1,
+				dialogControl = "EditBoxCurrency_BrokerAnything"
+			},
+			remove = {
+				type = 'select',
+				name = L["Remove"],
+				width = 'full',
+				set = function(info, value)
+					module.db.profile.ids[value] = nil
+					module:RemoveOption(value)
+					brokers[value].broker.value = nil
+					brokers[value].broker.text = L["Reload UI!"]
+					brokers[value] = nil
+					print(L["Reload UI to take effect!"])
+				end,
+				get = function(info) end,
+				values = function()
+					local values = {}
 
-						for id, _ in pairs(module.db.profile.ids) do
-							local _, currencyAmount, icon = GetCurrencyInfo(id)
-							local link = GetCurrencyLink(id, currencyAmount)
-							values[id] = ElioteUtils.getTexture(icon) .. link .. " |cFFAAAAAA(id:" .. id .. ")|r"
-						end
+					for id, _ in pairs(module.db.profile.ids) do
+						local _, currencyAmount, icon = GetCurrencyInfo(id)
+						local link = GetCurrencyLink(id, currencyAmount)
+						values[id] = ElioteUtils.getTexture(icon) .. link .. " |cFFAAAAAA(id:" .. id .. ")|r"
+					end
 
-						return values
-					end,
-					order = 2
-				}
+					return values
+				end,
+				order = 2
 			}
-		},
+		}
+	},
+}
+
+function module:GetOptions()
+	return options
+end
+
+function module:AddOption(id)
+	local args = options.currency.args
+
+	args[tostring(id)] = {
+		type = 'group',
+		name = module.db.profile.ids[id].name,
+		icon = module.db.profile.ids[id].icon,
+		args = BrokerAnything:CreateOptions(configVariables, module.db, "ids", id, module.OnOptionChanged)
 	}
+end
+
+function module:RemoveOption(id)
+	options.item.args[tostring(id)] = nil
+end
+
+function module:OnOptionChanged()
+	updateBroker(brokers[self])
 end
