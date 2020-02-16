@@ -252,8 +252,8 @@ function module:AddBroker(factionId)
 	end
 	db.name = repName
 	db.icon = icon
-	db.showValue = db.showValue or true
-	db.hideMax = db.hideMax or false
+	db.showValue = BrokerAnything:DefaultIfNull(db.showValue, true)
+	db.hideMax = BrokerAnything:DefaultIfNull(db.hideMax, false)
 
 	module:AddOption(factionId)
 

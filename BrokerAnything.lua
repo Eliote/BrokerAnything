@@ -180,3 +180,8 @@ function BrokerAnything:CreateOptions(variables, db, profileKey, id, onOptionCha
 	end
 	return ret
 end
+
+function BrokerAnything:DefaultIfNull(var, default)
+	if var == nil then return default end
+	return var
+end
