@@ -16,7 +16,8 @@ module.brokerTitle = L["Reputation"]
 ---@type table<string, SimpleConfigTable>
 local configVariables = {
 	showValue = { title = L["Show value"] },
-	hideMax = { title = L["Hide maximun"] }
+	hideMax = { title = L["Hide maximun"] },
+	showBalance = { title = L["Show balance"] }
 }
 
 local icons = {
@@ -254,6 +255,7 @@ function module:AddBroker(factionId)
 	db.icon = icon
 	db.showValue = BrokerAnything:DefaultIfNull(db.showValue, true)
 	db.hideMax = BrokerAnything:DefaultIfNull(db.hideMax, false)
+	db.showBalance = BrokerAnything:DefaultIfNull(db.showBalance, true)
 
 	module:AddOption(factionId)
 
@@ -309,10 +311,10 @@ function module:GetButtonText(factionId)
 
 	-- TODO: Add in game config
 	local showvalue = module.db.profile.ids[factionId].showValue
-	local hideMax = module.db.profile.ids[factionId].hideMax
 	if showvalue then
 		text = text .. value
 
+		local hideMax = module.db.profile.ids[factionId].hideMax
 		if not hideMax then
 			text = text .. "/" .. max
 		end
@@ -332,8 +334,9 @@ function module:GetButtonText(factionId)
 		text = "*" + text
 	end
 
-	if balance > 0 then
-		text = text .. " [" .. balance .. "]"
+	local showBalance = module.db.profile.ids[factionId].showBalance
+	if showBalance and balance > 0 then
+		text = text .. BrokerAnything:FormatBalance(balance, true)
 	end
 
 	return text
@@ -393,6 +396,7 @@ function module:AddOption(id)
 	args[tostring(id)] = {
 		type = 'group',
 		name = module.db.profile.ids[id].name,
+		icon = module.db.profile.ids[id].icon,
 		args = BrokerAnything:CreateOptions(configVariables, module.db, "ids", id, onOptionChanged) -- createOptions(id)
 
 	}
