@@ -15,9 +15,9 @@ module.brokerTitle = L["Reputation"]
 
 ---@type table<string, SimpleConfigTable>
 local configVariables = {
-	showValue = { title = L["Show value"] },
-	hideMax = { title = L["Hide maximun"] },
-	showBalance = { title = L["Show balance"] }
+	showValue = { title = L["Show value"], default = true },
+	hideMax = { title = L["Hide maximun"], default = true },
+	showBalance = { title = L["Show balance"], default = true }
 }
 
 local icons = {
@@ -253,9 +253,7 @@ function module:AddBroker(factionId)
 	end
 	db.name = repName
 	db.icon = icon
-	db.showValue = BrokerAnything:DefaultIfNull(db.showValue, true)
-	db.hideMax = BrokerAnything:DefaultIfNull(db.hideMax, false)
-	db.showBalance = BrokerAnything:DefaultIfNull(db.showBalance, true)
+	BrokerAnything:UpdateDatabaseDefaultConfigs(configVariables, db)
 
 	module:AddOption(factionId)
 

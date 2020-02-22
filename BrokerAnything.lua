@@ -136,8 +136,8 @@ function BrokerAnything:FormatBoolean(b)
 end
 
 ---@class SimpleConfigTable
----@field var string
 ---@field title string
+---@field default any
 
 ---@param variables table<any, SimpleConfigTable>
 ---@param db table
@@ -179,6 +179,16 @@ function BrokerAnything:CreateOptions(variables, db, profileKey, id, onOptionCha
 		}
 	end
 	return ret
+end
+
+---@param variables table<SimpleConfigTable>
+---@param db table
+function BrokerAnything:UpdateDatabaseDefaultConfigs(variables, db)
+	for k, v in pairs(variables) do
+		if (db[k] == nil) then
+			db[k] = v.default
+		end
+	end
 end
 
 function BrokerAnything:DefaultIfNull(var, default)

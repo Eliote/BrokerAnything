@@ -12,7 +12,7 @@ module.brokers = brokers
 module.brokerTitle = L["Item"]
 
 local configVariables = {
-	showBalance = { title = L["Show balance"] }
+	showBalance = { title = L["Show balance"], default = true }
 }
 
 local function updateBroker(brokerTable)
@@ -128,7 +128,7 @@ function module:AddBroker(itemID)
 		module.db.profile.ids[itemID] = db
 		db.link = itemLink
 		db.icon = itemIcon
-		db.showBalance = BrokerAnything:DefaultIfNull(db.showBalance, true)
+		BrokerAnything:UpdateDatabaseDefaultConfigs(configVariables, db)
 
 		module:AddOption(itemID)
 		updateBroker(brokerTable)
