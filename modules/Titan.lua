@@ -24,6 +24,8 @@ local function createTitanOption(id, text, var)
 end
 
 function module:CreateMenu(menu, id, name)
+	if not menu then return end
+
 	local first = menu[1]
 	if (first == nil or not first.isTitle) then
 		table.insert(menu, 1, { text = name, notCheckable = true, notClickable = true, isTitle = 1 })

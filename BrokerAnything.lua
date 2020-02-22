@@ -110,7 +110,10 @@ function BrokerAnything:CreateOnClick(onClick)
 		local type = type(onClick)
 		if (type == "function") then
 			menu = onClick(...)
-		else
+		end
+
+		-- An elseif is not enough because onClick can return nil too!
+		if not menu then
 			menu = {}
 		end
 
@@ -145,6 +148,8 @@ end
 ---@param id string
 ---@param onOptionChange function
 function BrokerAnything:CreateMenu(variables, db, profileKey, id, onOptionChange)
+	if (not db or not db.profile or not db.profile[profileKey] or not db.profile[profileKey][id]) then return end
+
 	local ret = {}
 	for k, v in pairs(variables) do
 		table.insert(ret, {

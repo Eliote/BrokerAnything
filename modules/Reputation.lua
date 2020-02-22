@@ -174,6 +174,8 @@ function module:AddBroker(factionId)
 			label = name,
 			name = name,
 			OnTooltipShow = function(tooltip)
+				if not brokers[factionId] then return end
+
 				local name, description, standingId, barMin, barMax, barValue, atWarWith, canToggleAtWar = GetFactionInfoByID(factionId)
 				if not name then return end
 
