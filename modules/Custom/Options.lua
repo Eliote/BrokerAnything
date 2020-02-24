@@ -2,6 +2,7 @@ local ADDON_NAME, _ = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 local BrokerAnything = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
+local ConfigRegistry = LibStub("AceConfigRegistry-3.0")
 
 ---@type CustomModule
 local module = BrokerAnything:GetModule("CustomModule")
@@ -12,6 +13,21 @@ local Link = module:GetModule("Link")
 ---@type ElioteUtils
 local ElioteUtils = LibStub("LibElioteUtils-1.0")
 local empty = ElioteUtils.empty
+
+local iconSelector
+
+local function getIconSelector()
+	if not iconSelector then
+		local lib = LibStub("LibAdvancedIconSelector-Eliote")
+		local options = {
+			headerText = L["Choose an Icon"],
+			showDynamicText = true
+		}
+		iconSelector = lib:CreateIconSelectorWindow("BrokerAnything_IconSelector", UIParent, options)
+		iconSelector:SetPoint("CENTER")
+	end
+	return iconSelector
+end
 
 local options = {
 	type = 'group',
@@ -58,6 +74,13 @@ function module:AddToOptions(name)
 
 	self:SetOption(name, {
 		name = name,
+		icon = function()
+			local icon = module:GetBrokerInfo(name).icon
+			if empty(icon) then
+				return "Interface\\Icons\\INV_Misc_QuestionMark"
+			end
+			return module:GetBrokerInfo(name).icon
+		end,
 		type = "group",
 		childGroups = "tab",
 		args = {
@@ -69,7 +92,7 @@ function module:AddToOptions(name)
 					module:GetBrokerInfo(name).enable = val
 					module:SetBrokerState(name, val)
 				end,
-				get = function(info) return module:GetBrokerInfo(name).enable end,
+				get = function() return module:GetBrokerInfo(name).enable end,
 				order = 1,
 			},
 			config = {
@@ -77,19 +100,39 @@ function module:AddToOptions(name)
 				type = "group",
 				order = 2,
 				args = {
-					rename = {
-						type = 'input',
-						name = L["Rename"],
-						width = 'full',
-						confirm = function(info, value)
-							return L('Are you sure you want to rename "${name}" to "${newName}"?', { name = name, newName = value })
-						end,
-						set = function(info, value)
-							if (empty(value)) then return false end
-							module:RenameBroker(name, value)
-						end,
-						get = false,
-						order = 10
+					nameIconGroup = {
+						name = L["Name/Icon"],
+						type = "group",
+						order = 10,
+						inline = true,
+						args = {
+							rename = {
+								type = 'input',
+								name = L["Rename"],
+								width = 'full',
+								confirm = function(info, value)
+									return L('Are you sure you want to rename "${name}" to "${newName}"?', { name = name, newName = value })
+								end,
+								set = function(info, value)
+									if (empty(value)) then return false end
+									module:RenameBroker(name, value)
+								end,
+								get = false,
+								order = 10
+							},
+							icon = {
+								type = "input",
+								name = L["Icon"],
+								width = "full",
+								set = function(info, value)
+									module:GetBrokerInfo(name).icon = tostring(value)
+									module:AddOrUpdateBroker(name)
+								end,
+								get = function() return tostring(module:GetBrokerInfo(name).icon or "") end,
+								dialogControl = "LibAdvancedIconSelector-EditBox-Widget",
+								order = 20
+							},
+						}
 					},
 					eventsGroup = {
 						name = L["Events"],

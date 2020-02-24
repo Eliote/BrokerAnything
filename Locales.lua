@@ -114,6 +114,8 @@ Este script é executado quando o broker é clicado.]]
 	L["Show value"] = "Mostrar valor"
 	L["Hide maximun"] = "Esconder máximo"
 	L["Show balance"] = "Mostrar saldo"
+	L["Icon"] = "Icone"
+	L["Name/Icon"] = "Nome/Icone"
 	--@end-debug@
 
 	return

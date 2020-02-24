@@ -120,7 +120,7 @@ function module:EnableBroker(name)
 	local broker = LibStub("LibDataBroker-1.1"):NewDataObject(brokerName, {
 		id = brokerName,
 		type = "data source",
-		icon = "Interface\\Icons\\INV_Misc_QuestionMark",
+		icon = brokerInfo.icon or "Interface\\Icons\\INV_Misc_QuestionMark",
 		label = L["BA (custom) - "] .. name,
 		name = Colors.WHITE .. name .. "|r",
 		OnTooltipShow = function(...) runScript(brokerInfo.tooltipScript, name .. "_Tooltip", ...) end,
@@ -131,6 +131,7 @@ function module:EnableBroker(name)
 
 	if (not broker) then
 		broker = LibStub("LibDataBroker-1.1"):GetDataObjectByName(brokerName)
+		broker.icon = brokerInfo.icon or "Interface\\Icons\\INV_Misc_QuestionMark"
 	end
 
 	self:CancelScheduler(name)
@@ -233,6 +234,7 @@ function module:GetBrokerInfo(name, default)
 	---@field tooltipScript string
 	---@field clickScript string
 	---@field enable boolean
+	---@field icon any
 	self.db.profile.brokers[name] = self.db.profile.brokers[name] or default
 	return self.db.profile.brokers[name]
 end
