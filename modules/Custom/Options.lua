@@ -117,7 +117,7 @@ function module:AddToOptions(name)
 									if (empty(value)) then return false end
 									module:RenameBroker(name, value)
 								end,
-								get = false,
+								get = function() return name end,
 								order = 10
 							},
 							icon = {
