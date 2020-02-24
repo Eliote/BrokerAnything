@@ -331,6 +331,7 @@ This script is called when the broker is clicked.]]
 						func = function()
 							local link = Link:CreateBrokerLink(name, true)
 							local editBox = GetCurrentKeyBoardFocus()
+							if not editBox then return end
 							editBox:Insert(link)
 						end,
 						order = 30,
