@@ -309,7 +309,6 @@ function module:GetButtonText(factionId)
 
 	local text = "" .. color
 
-	-- TODO: Add in game config
 	local showvalue = module.db.profile.ids[factionId].showValue
 	if showvalue then
 		text = text .. value
@@ -336,7 +335,7 @@ function module:GetButtonText(factionId)
 
 	local showBalance = module.db.profile.ids[factionId].showBalance
 	if showBalance and balance > 0 then
-		text = text .. BrokerAnything:FormatBalance(balance, true)
+		text = text .. BrokerAnything:FormatBalance(balance)
 	end
 
 	return text
