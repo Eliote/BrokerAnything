@@ -17,7 +17,8 @@ module.brokerTitle = L["Reputation"]
 local configVariables = {
 	showValue = { title = L["Show value"], default = true },
 	hideMax = { title = L["Hide maximun"], default = true },
-	showBalance = { title = L["Show balance"], default = true }
+	showBalance = { title = L["Show balance"], default = true },
+	icon = { title = L["Icon"], type = "icon" },
 }
 
 local icons = {
@@ -38,6 +39,7 @@ local GetFactionInfoByID = GetFactionInfoByID
 local function updateBroker(brokerTable)
 	local text = module:GetButtonText(brokerTable.id)
 
+	brokerTable.broker.icon = module.db.profile.ids[brokerTable.id].icon
 	brokerTable.broker.value = text
 	brokerTable.broker.text = text
 end

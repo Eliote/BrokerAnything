@@ -121,14 +121,16 @@ function BrokerAnything:CreateOnClick(onClick)
 			v(menu, ...)
 		end
 
-		table.insert(menu, BrokerAnything.MenuSeparator)
-		table.insert(menu, {
-			notCheckable = true,
-			text = CANCEL,
-			keepShownOnClick = false
-		})
+		if (#menu > 0) then
+			table.insert(menu, BrokerAnything.MenuSeparator)
+			table.insert(menu, {
+				notCheckable = true,
+				text = CANCEL,
+				keepShownOnClick = false
+			})
 
-		L_EasyMenu(menu, dropdownFrame, "cursor", 0, 0, "MENU")
+			L_EasyMenu(menu, dropdownFrame, "cursor", 0, 0, "MENU")
+		end
 	end
 end
 
@@ -136,6 +138,38 @@ BrokerAnything.DefaultOnClick = BrokerAnything:CreateOnClick()
 
 function BrokerAnything:FormatBoolean(b)
 	if b then return L["Yes"] else return L["No"] end
+end
+
+local iconSelector
+local function ShowIconSelector(title, db, profileKey, id, option, onOptionChange)
+	if not iconSelector then
+		local lib = LibStub("LibAdvancedIconSelector-Eliote")
+		local options = {
+			headerText = "",
+			showDynamicText = true
+		}
+		iconSelector = lib:CreateIconSelectorWindow("LibAdvancedIconSelector-BA-Window", UIParent, options)
+		iconSelector:SetPoint("CENTER")
+	end
+
+	iconSelector.headerText:SetText(title)
+	iconSelector:SetScript("OnOkayClicked", function(self)
+		local iconIndex = self.iconsFrame:GetSelectedIcon()
+		if not iconIndex then return end
+		local _, _, texture = self.iconsFrame:GetIconInfo(iconIndex)
+		if not texture then return end
+		db.profile[profileKey][id][option] = tostring(texture)
+		if onOptionChange then onOptionChange(id) end
+		self:Hide()
+	end)
+
+	-- if the selector is shown, hide it so it go to the top when show
+	if iconSelector:IsShown() then
+		iconSelector:Hide()
+	end
+
+	iconSelector:SetSearchParameter(nil, true)
+	iconSelector:Show()
 end
 
 ---@class SimpleConfigTable
@@ -152,15 +186,26 @@ function BrokerAnything:CreateMenu(variables, db, profileKey, id, onOptionChange
 
 	local ret = {}
 	for k, v in pairs(variables) do
-		table.insert(ret, {
-			text = v.title,
-			func = function()
-				db.profile[profileKey][id][k] = not db.profile[profileKey][id][k]
-				if onOptionChange then onOptionChange(id) end
-			end,
-			checked = db.profile[profileKey][id][k],
-			keepShownOnClick = 1
-		})
+		if (v.type == nil or v.type == "boolean") then
+			table.insert(ret, {
+				text = v.title,
+				func = function()
+					db.profile[profileKey][id][k] = not db.profile[profileKey][id][k]
+					if onOptionChange then onOptionChange(id) end
+				end,
+				checked = db.profile[profileKey][id][k],
+				keepShownOnClick = 1
+			})
+		elseif v.type == "icon" then
+			table.insert(ret, {
+				text = v.title,
+				func = function()
+					ShowIconSelector(v.title, db, profileKey, id, k, onOptionChange)
+				end,
+				icon = db.profile[profileKey][id][k],
+				notCheckable = 1
+			})
+		end
 	end
 	return ret
 end
@@ -173,15 +218,28 @@ end
 function BrokerAnything:CreateOptions(variables, db, profileKey, id, onOptionChange)
 	local ret = {}
 	for k, v in pairs(variables) do
-		ret[k] = {
-			name = v.title,
-			type = "toggle",
-			set = function(info, val)
-				db.profile[profileKey][id][k] = val
-				if onOptionChange then onOptionChange(id) end
-			end,
-			get = function(info) return db.profile[profileKey][id][k] end
-		}
+		if (v.type == nil or v.type == "boolean") then
+			ret[k] = {
+				name = v.title,
+				type = "toggle",
+				set = function(info, val)
+					db.profile[profileKey][id][k] = val
+					if onOptionChange then onOptionChange(id) end
+				end,
+				get = function(info) return db.profile[profileKey][id][k] end
+			}
+		elseif v.type == "icon" then
+			ret[k] = {
+				type = "input",
+				name = v.title,
+				set = function(info, val)
+					db.profile[profileKey][id][k] = tostring(val)
+					if onOptionChange then onOptionChange(id) end
+				end,
+				get = function(info) return db.profile[profileKey][id][k] or "" end,
+				dialogControl = "LibAdvancedIconSelector-EditBox-Widget"
+			}
+		end
 	end
 	return ret
 end
