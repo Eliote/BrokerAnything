@@ -115,6 +115,8 @@ end
 
 local function onOptionChanged(id)
 	updateBroker(brokers[id])
+	-- override the option so it gets updated
+	module:AddOption(id)
 end
 
 function module:OnEnable()
@@ -235,11 +237,12 @@ function module:AddBroker(factionId)
 				tooltip:Show()
 			end,
 			OnClick = BrokerAnything:CreateOnClick(
-					function(...)
+					function(_, button)
+						if button ~= "RightButton" then return end
 						return BrokerAnything:CreateMenu(configVariables, module.db, "ids", factionId, onOptionChanged)
 					end
 			),
-			configPath = { "reputation" },
+			configPath = { "reputation", tostring(factionId) },
 			category = L["Reputation"]
 		})
 	}

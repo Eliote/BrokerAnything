@@ -109,11 +109,12 @@ function module:AddBroker(itemID)
 				tooltip:Show()
 			end,
 			OnClick = BrokerAnything:CreateOnClick(
-					function(...)
+					function(_, button)
+						if button ~= "RightButton" then return end
 						return BrokerAnything:CreateMenu(configVariables, module.db, "ids", itemID, module.OnOptionChanged)
 					end
 			),
-			configPath = { "item" },
+			configPath = { "item", tostring(itemID) },
 			category = L["Item"]
 		})
 
