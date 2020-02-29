@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibAdvancedIconSelector-Eliote"
-local MINOR_VERSION = 1
+local MINOR_VERSION = 2
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub to operate") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -441,6 +441,7 @@ function IconSelectorFrame:Create(name, parent, options)
 	-- Create the internal frame to display the icons
 	self.internalFrame = CreateFrame("Frame", name .. "_Internal", self)
 	self.internalFrame.parent = self
+	self.internalFrame.widgetName = name
 	self.internalFrame:SetScript("OnSizeChanged", self.private_OnInternalFrameSizeChanged)
 
 	self.internalFrame:SetScript("OnHide", function()
@@ -651,6 +652,7 @@ end
 -- (private) Called when the internal icon frame's size has changed (i.e., the part without the scroll bar)
 function IconSelectorFrame.private_OnInternalFrameSizeChanged(internalFrame, width, height)
 	local parent = internalFrame.parent
+	local widgetName = internalFrame.widgetName or ""
 
 	local oldFirstIcon = 1 + parent.scrollOffset * parent.iconsX - parent.fauxResults
 	parent.iconsX = floor((floor(width + 0.5) - 2 * ICON_PADDING + ICON_SPACING) / (ICON_WIDTH + ICON_SPACING))
@@ -669,8 +671,8 @@ function IconSelectorFrame.private_OnInternalFrameSizeChanged(internalFrame, wid
 			-- Create the button if it doesn't exist (but don't set its normal texture yet)
 			local button = parent.icons[i]
 			if not button then
-				button = CreateFrame("CheckButton", format("MTAISButton%d", i), parent.internalFrame, "PopupButtonTemplate")
-				button.icon = _G[format("MTAISButton%dIcon", i)]
+				button = CreateFrame("CheckButton", format(widgetName .. "_MTAISButton%d", i), parent.internalFrame, "PopupButtonTemplate")
+				button.icon = _G[widgetName .. format("_MTAISButton%dIcon", i)]
 				parent.icons[i] = button
 				button:SetSize(36, 36)
 				button:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")

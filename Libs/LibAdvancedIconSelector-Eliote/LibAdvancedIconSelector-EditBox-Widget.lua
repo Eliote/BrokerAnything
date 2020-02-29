@@ -1,7 +1,7 @@
 --[[-----------------------------------------------------------------------------
 EditBox Widget
 -------------------------------------------------------------------------------]]
-local Type, Version = "LibAdvancedIconSelector-EditBox-Widget", 1
+local Type, Version = "LibAdvancedIconSelector-EditBox-Widget", 2
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -63,6 +63,7 @@ local function ShowIconSelector(widget)
 		iconSelector:Hide()
 	end
 
+	iconSelector:SetSearchParameter(nil, true)
 	iconSelector:Show()
 end
 
