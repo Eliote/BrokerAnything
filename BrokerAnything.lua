@@ -205,6 +205,12 @@ function BrokerAnything:CreateMenu(variables, db, profileKey, id, onOptionChange
 				icon = db.profile[profileKey][id][k],
 				notCheckable = 1
 			})
+		elseif v.type == "func" then
+			table.insert(ret, {
+				text = v.title,
+				func = function() v.func(id) end,
+				notCheckable = 1
+			})
 		end
 	end
 	return ret
@@ -238,6 +244,12 @@ function BrokerAnything:CreateOptions(variables, db, profileKey, id, onOptionCha
 				end,
 				get = function(info) return db.profile[profileKey][id][k] or "" end,
 				dialogControl = "LibAdvancedIconSelector-EditBox-Widget"
+			}
+		elseif v.type == "func" then
+			ret[k] = {
+				type = "execute",
+				name = v.title,
+				func = function() v.func(id) end
 			}
 		end
 	end

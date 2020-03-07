@@ -12,10 +12,19 @@ module.brokers = brokers
 module.brokerTitle = L["Item"]
 
 local configVariables = {
-	showBalance = { title = L["Show balance"], default = true }
+	showBalance = { title = L["Show balance"], default = true },
+	resetBalance = {
+		title = L["Reset session balance"],
+		type = "func",
+		func = function(id)
+			local brokerTable = brokers[id]
+			brokerTable.sessionStart = GetItemCount(id, true)
+			module:updateBroker(brokerTable)
+		end
+	}
 }
 
-local function updateBroker(brokerTable)
+function module:updateBroker(brokerTable)
 	local itemCount = GetItemCount(brokerTable.id, true)
 
 	local balance = ""
@@ -29,7 +38,7 @@ end
 
 local function updateAll()
 	for _, v in pairs(brokers) do
-		updateBroker(v)
+		module:updateBroker(v)
 	end
 end
 
@@ -132,7 +141,7 @@ function module:AddBroker(itemID)
 		BrokerAnything:UpdateDatabaseDefaultConfigs(configVariables, db)
 
 		module:AddOption(itemID)
-		updateBroker(brokerTable)
+		module:updateBroker(brokerTable)
 	end)
 end
 
@@ -209,5 +218,5 @@ function module:RemoveOption(id)
 end
 
 function module:OnOptionChanged()
-	updateBroker(brokers[self])
+	module:updateBroker(brokers[self])
 end

@@ -19,6 +19,16 @@ local configVariables = {
 	hideMax = { title = L["Hide maximun"], default = true },
 	showBalance = { title = L["Show balance"], default = true },
 	icon = { title = L["Icon"], type = "icon" },
+	resetBalance = {
+		title = L["Reset session balance"],
+		type = "func",
+		func = function(id)
+			local brokerTable = brokers[id]
+			local _, _, _, _, _, repValue = GetFactionInfoByID(id)
+			brokerTable.sessionStart = repValue
+			module:updateBroker(brokerTable)
+		end
+	}
 }
 
 local icons = {
@@ -36,7 +46,7 @@ local icons = {
 
 local GetFactionInfoByID = GetFactionInfoByID
 
-local function updateBroker(brokerTable)
+function module:updateBroker(brokerTable)
 	local text = module:GetButtonText(brokerTable.id)
 
 	brokerTable.broker.icon = module.db.profile.ids[brokerTable.id].icon
@@ -46,7 +56,7 @@ end
 
 local function updateAll()
 	for _, v in pairs(brokers) do
-		updateBroker(v)
+		module:updateBroker(v)
 	end
 end
 
@@ -114,7 +124,7 @@ local function getStandColor(standingId)
 end
 
 local function onOptionChanged(id)
-	updateBroker(brokers[id])
+	module:updateBroker(brokers[id])
 	-- override the option so it gets updated
 	module:AddOption(id)
 end
@@ -264,7 +274,7 @@ function module:AddBroker(factionId)
 
 	module:AddOption(factionId)
 
-	updateBroker(brokerTable)
+	module:updateBroker(brokerTable)
 end
 
 function module:GetValueAndMaximum(standingId, barValue, bottomValue, topValue, factionId)

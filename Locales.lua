@@ -116,6 +116,7 @@ Este script é executado quando o broker é clicado.]]
 	L["Show balance"] = "Mostrar saldo"
 	L["Icon"] = "Icone"
 	L["Name/Icon"] = "Nome/Icone"
+	L["Reset session balance"] = "Redefinir o saldo da sessão"
 	--@end-debug@
 
 	return
