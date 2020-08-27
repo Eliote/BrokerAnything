@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibAdvancedIconSelector-Eliote"
-local MINOR_VERSION = 2
+local MINOR_VERSION = 3
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub to operate") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -172,7 +172,7 @@ function IconSelectorWindow:Create(name, parent, options)
 	if not parent then parent = UIParent end
 	options = Helpers.ApplyDefaults(options, defaults)
 
-	self = self:MixInto(CreateFrame("Frame", name, parent))
+	self = self:MixInto(CreateFrame("Frame", name, parent, BackdropTemplateMixin and "BackdropTemplate"))
 	self:Hide()
 	self:SetFrameStrata("FULLSCREEN_DIALOG")
 	self:SetSize(options.width, options.height)

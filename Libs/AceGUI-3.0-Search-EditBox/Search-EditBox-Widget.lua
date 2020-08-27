@@ -1,7 +1,7 @@
 local AceGUI = LibStub("AceGUI-3.0")
 
 local Type = "SearchEditBox_Base-Eliote"
-local Version = 1
+local Version = 2
 local PREDICTOR_ROWS = 15
 local predictorBackdrop = {
   bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
@@ -326,7 +326,7 @@ end
 
 -- This function is only executed once and them removed, because the same predictor frame is used for all widgets
 local function CreatePredictorFrame(num)
-	local predictor = CreateFrame("Frame", "AceGUI30SearchEditBox" .. num .. "Predictor", UIParent)
+	local predictor = CreateFrame("Frame", "AceGUI30SearchEditBox" .. num .. "Predictor", UIParent, BackdropTemplateMixin and "BackdropTemplate")
 	predictor:SetBackdrop(predictorBackdrop)
 	predictor:SetBackdropColor(0, 0, 0, 0.85)
 	predictor:SetFrameStrata("TOOLTIP")
