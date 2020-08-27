@@ -7,6 +7,9 @@ local module = BrokerAnything:NewModule("CurrencyModule", "AceEvent-3.0")
 local Colors = BrokerAnything.Colors
 local ElioteUtils = LibStub("LibElioteUtils-1.0")
 
+local GetCurrencyInfo = C_CurrencyInfo.GetCurrencyInfo
+local GetCurrencyLink = C_CurrencyInfo.GetCurrencyLink
+
 local brokers = {}
 module.brokers = brokers
 module.brokerTitle = L["Currency"]
@@ -18,15 +21,16 @@ local configVariables = {
 		type = "func",
 		func = function(id)
 			local brokerTable = brokers[id]
-			local _, currencyAmount = GetCurrencyInfo(id)
-			brokerTable.sessionStart = currencyAmount
+			local info = GetCurrencyInfo(id)
+			brokerTable.sessionStart = info.quantity
 			module:updateBroker(brokerTable)
 		end
 	}
 }
 
 function module:updateBroker(brokerTable)
-	local _, currencyAmount = GetCurrencyInfo(brokerTable.id)
+	local info = GetCurrencyInfo(brokerTable.id)
+	local currencyAmount = info and info.quantity
 
 	local balance = ""
 	if (module.db.profile.ids[brokerTable.id].showBalance) then
@@ -70,12 +74,13 @@ function module:AddBroker(currencyId)
 		return
 	end
 
-	local currencyName, currencyAmount, icon = GetCurrencyInfo(currencyId)
-
-	if (ElioteUtils.empty(currencyName)) then
+	local info = GetCurrencyInfo(currencyId)
+	if (not info) then
 		print(L("No currency with id '${id}' found!", { id = currencyId }))
 		return
 	end
+
+	local currencyName, currencyAmount, icon = info.name, info.quantity, info.iconFileID
 
 	local brokerTable = {
 		id = currencyId,
@@ -90,7 +95,8 @@ function module:AddBroker(currencyId)
 		label = L["BA (currency) - "] .. currencyName or currencyId,
 		name = Colors.WHITE .. (currencyName or currencyId) .. "|r",
 		OnTooltipShow = function(tooltip)
-			local _, amount, _, _, _, maximum = GetCurrencyInfo(currencyId)
+			local info = GetCurrencyInfo(currencyId)
+			local amount, maximum = info.quantity, info.maxQuantity
 			local link = GetCurrencyLink(currencyId, amount)
 			tooltip:SetHyperlink(link)
 
@@ -182,9 +188,9 @@ local options = {
 					local values = {}
 
 					for id, _ in pairs(module.db.profile.ids) do
-						local _, currencyAmount, icon = GetCurrencyInfo(id)
-						local link = GetCurrencyLink(id, currencyAmount)
-						values[id] = ElioteUtils.getTexture(icon) .. link .. " |cFFAAAAAA(id:" .. id .. ")|r"
+						local info = GetCurrencyInfo(id)
+						local link = GetCurrencyLink(id, info.quantity)
+						values[id] = ElioteUtils.getTexture(info.iconFileID) .. link .. " |cFFAAAAAA(id:" .. id .. ")|r"
 					end
 
 					return values

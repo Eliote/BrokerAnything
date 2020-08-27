@@ -4,12 +4,11 @@ local Predictor = {
 }
 
 local ElioteUtils = LibStub("LibElioteUtils-1.0")
-local empty = ElioteUtils.empty
 local startsWith = ElioteUtils.startsWith
 local getTexture = ElioteUtils.getTexture
 
-local GetCurrencyInfo = GetCurrencyInfo
-local GetCurrencyLink = GetCurrencyLink
+local GetCurrencyInfo = C_CurrencyInfo.GetCurrencyInfo
+local GetCurrencyLink = C_CurrencyInfo.GetCurrencyLink
 
 function Predictor:Initialize()
 	self.Initialize = nil
@@ -18,9 +17,9 @@ end
 
 function Predictor:Cache(id)
 	if (not id) then return end
-	local name = GetCurrencyInfo(id)
-	if (not empty(name)) then
-		self.currencyCache[id] = name
+	local info = GetCurrencyInfo(id)
+	if info then
+		self.currencyCache[id] = info.name
 	end
 end
 
@@ -38,9 +37,9 @@ function Predictor:GetValues(text, values, max)
 
 	for id, name in pairs(self.currencyCache) do
 		if (startsWith(tostring(id), text) or string.find(name:lower(), text:lower(), 1, true)) then
-			local _, currencyAmount, icon = GetCurrencyInfo(id)
-			local link = GetCurrencyLink(id, currencyAmount) or "[" .. name .. "]"
-			values[id] = "|cFFAAAAAA(" .. id .. ")|r " .. getTexture(icon) .. link
+			local info = GetCurrencyInfo(id)
+			local link = GetCurrencyLink(id, info.quantity) or "[" .. name .. "]"
+			values[id] = "|cFFAAAAAA(" .. id .. ")|r " .. getTexture(info.iconFileID) .. link
 
 			count = count + 1
 			if (count >= max) then break end
@@ -49,8 +48,8 @@ function Predictor:GetValues(text, values, max)
 end
 
 function Predictor:GetHyperlink(key)
-	local _, currencyAmount = GetCurrencyInfo(key)
-	local link = GetCurrencyLink(key, currencyAmount)
+	local info = GetCurrencyInfo(key)
+	local link = GetCurrencyLink(key, info.quantity)
 	return link
 end
 
