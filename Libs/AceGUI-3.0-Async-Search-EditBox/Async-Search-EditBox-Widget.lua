@@ -339,7 +339,7 @@ do
 			ClearCursor()
 			HideButton(self)
 			AceGUI:ClearFocus()
-			hidePredictor(this)
+			hidePredictor(frame)
 		end
 	end
 
