@@ -4,6 +4,10 @@ local ADDON_NAME, _ = ...
 local BrokerAnything = LibStub("AceAddon-3.0"):NewAddon(ADDON_NAME, "AceEvent-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 
+---@type ElioteDropDownMenu
+local EDDM = LibStub("ElioteDropDownMenu-1.0")
+local dropdownFrame = EDDM.UIDropDownMenu_GetOrCreate("BrokerAnythingTitan_MenuFrame")
+
 BrokerAnything.Colors = {
 	WHITE = "|cFFFFFFFF",
 	RED = "|cFFDC2924",
@@ -91,7 +95,6 @@ function BrokerAnything:FormatBalance(value, tooltip)
 end
 
 local registeredClicks = {}
-local dropdownFrame = CreateFrame("Frame", "BrokerAnythingTitan_MenuFrame", nil, "UIDropDownMenuTemplate")
 function BrokerAnything:RegisterOnClick(onClick)
 	table.insert(registeredClicks, onClick)
 end
@@ -129,7 +132,7 @@ function BrokerAnything:CreateOnClick(onClick)
 				keepShownOnClick = false
 			})
 
-			L_EasyMenu(menu, dropdownFrame, "cursor", 0, 0, "MENU")
+			EDDM.EasyMenu(menu, dropdownFrame, "cursor", 0, 0, "MENU")
 		end
 	end
 end
