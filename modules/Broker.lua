@@ -25,7 +25,7 @@ function broker.OnTooltipShow(tip)
 	tip:AddLine(Colors.YELLOW .. L["Click to open the UI"])
 
 	for _, baModule in BrokerAnything:IterateModules() do
-		if (baModule.brokers) then
+		if (baModule.brokers and next(baModule.brokers)) then
 			tip:AddLine(" ")
 			tip:AddLine(baModule.brokerTitle or "")
 			for id, brokerTable in pairs(baModule.brokers) do
