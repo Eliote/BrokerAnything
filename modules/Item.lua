@@ -96,7 +96,7 @@ function module:AddBroker(itemID)
 			id = brokerName,
 			type = "data source",
 			icon = itemIcon or "Interface\\Icons\\INV_Misc_QuestionMark",
-			label = L["BA (item) - "] .. itemName,
+			label = itemName,
 			name = name,
 			OnTooltipShow = function(tooltip)
 				tooltip:SetHyperlink(itemLink)

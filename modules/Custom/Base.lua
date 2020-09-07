@@ -121,7 +121,7 @@ function module:EnableBroker(name)
 		id = brokerName,
 		type = "data source",
 		icon = brokerInfo.icon or "Interface\\Icons\\INV_Misc_QuestionMark",
-		label = L["BA (custom) - "] .. name,
+		label = name,
 		name = Colors.WHITE .. name .. "|r",
 		OnTooltipShow = function(...) runScript(brokerInfo.tooltipScript, name .. "_Tooltip", ...) end,
 		OnClick = function(...) runScript(brokerInfo.clickScript, name .. "_Click", ...) end,

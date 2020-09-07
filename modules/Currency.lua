@@ -92,7 +92,7 @@ function module:AddBroker(currencyId)
 		id = brokerName,
 		type = "data source",
 		icon = icon or "Interface\\Icons\\INV_Misc_QuestionMark",
-		label = L["BA (currency) - "] .. currencyName or currencyId,
+		label = currencyName or currencyId,
 		name = Colors.WHITE .. (currencyName or currencyId) .. "|r",
 		OnTooltipShow = function(tooltip)
 			local info = GetCurrencyInfo(currencyId)
