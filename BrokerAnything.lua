@@ -273,3 +273,17 @@ function BrokerAnything:DefaultIfNull(var, default)
 	if var == nil then return default end
 	return var
 end
+
+local AceConfigDialog = LibStub("AceConfigDialog-3.0")
+function BrokerAnything:OpenConfigDialog(configPath)
+	AceConfigDialog:Open(ADDON_NAME)
+	if configPath then
+		AceConfigDialog:SelectGroup(ADDON_NAME, unpack(configPath))
+	end
+
+	-- Hack to fix TreeGroup dragger, allowing it to resize without the need to move/resize the whole dialog first
+	-- Issue: https://www.wowace.com/projects/ace3/issues/529
+	local dialogFrame = AceConfigDialog.OpenFrames[ADDON_NAME].frame
+	dialogFrame:StartMoving()
+	dialogFrame:StopMovingOrSizing()
+end

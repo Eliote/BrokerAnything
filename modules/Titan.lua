@@ -8,7 +8,6 @@ if not L then return end
 local BrokerAnything = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
 local module = BrokerAnything:NewModule("TitanModule", "AceEvent-3.0")
 
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 ---@type ElioteUtils
 local ElioteUtils = LibStub("LibElioteUtils-1.0")
 
@@ -58,10 +57,7 @@ local OnClick = function(menu, registry, button, ...)
 			module:CreateMenu(menu, id, title)
 		elseif (button == "LeftButton") then
 			local broker = LibStub("LibDataBroker-1.1"):GetDataObjectByName(registry.registry.id)
-			AceConfigDialog:Open(ADDON_NAME)
-			if broker.configPath then
-				AceConfigDialog:SelectGroup(ADDON_NAME, unpack(broker.configPath))
-			end
+			BrokerAnything:OpenConfigDialog(broker.configPath)
 		end
 	end
 end

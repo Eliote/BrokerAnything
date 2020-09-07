@@ -1,6 +1,7 @@
 local ADDON_NAME, _ = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
+--- @type BrokerAnything
 local BrokerAnything = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
 local module = BrokerAnything:NewModule("BrokerAnythingBroker", "AceEvent-3.0")
 local Colors = BrokerAnything.Colors
@@ -52,7 +53,7 @@ function broker.OnTooltipShow(tip)
 end
 
 function broker.OnClick(self, button)
-	LibStub("AceConfigDialog-3.0"):Open(ADDON_NAME)
+	BrokerAnything:OpenConfigDialog()
 end
 
 function module:SetMinimapVisibility(show)
