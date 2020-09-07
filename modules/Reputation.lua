@@ -253,7 +253,8 @@ function module:AddBroker(factionId)
 					end
 			),
 			configPath = { "reputation", tostring(factionId) },
-			category = L["Reputation"]
+			category = L["Reputation"],
+			tocname = ADDON_NAME
 		})
 	}
 

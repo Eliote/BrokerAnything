@@ -124,7 +124,8 @@ function module:AddBroker(itemID)
 					end
 			),
 			configPath = { "item", tostring(itemID) },
-			category = L["Item"]
+			category = L["Item"],
+			tocname = ADDON_NAME
 		})
 
 		if (not brokerTable.broker) then

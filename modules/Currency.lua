@@ -121,7 +121,8 @@ function module:AddBroker(currencyId)
 				end
 		),
 		configPath = { "currency", tostring(currencyId) },
-		category = L["Currency"]
+		category = L["Currency"],
+		tocname = ADDON_NAME
 	})
 
 	if (not brokerTable.broker) then

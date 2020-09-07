@@ -126,7 +126,8 @@ function module:EnableBroker(name)
 		OnTooltipShow = function(...) runScript(brokerInfo.tooltipScript, name .. "_Tooltip", ...) end,
 		OnClick = function(...) runScript(brokerInfo.clickScript, name .. "_Click", ...) end,
 		configPath = { "custom", self:GetOptionName(name) },
-		category = L["Custom"]
+		category = L["Custom"],
+		tocname = ADDON_NAME
 	})
 
 	if (not broker) then
