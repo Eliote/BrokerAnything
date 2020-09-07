@@ -119,8 +119,11 @@ function module:AddBroker(itemID)
 			end,
 			OnClick = BrokerAnything:CreateOnClick(
 					function(_, button)
-						if button ~= "RightButton" then return end
-						return BrokerAnything:CreateMenu(configVariables, module.db, "ids", itemID, module.OnOptionChanged)
+						if button == "LeftButton" then
+							BrokerAnything:OpenConfigDialog({ "item", tostring(itemID) })
+						elseif button == "RightButton" then
+							return BrokerAnything:CreateMenu(configVariables, module.db, "ids", itemID, module.OnOptionChanged)
+						end
 					end
 			),
 			configPath = { "item", tostring(itemID) },

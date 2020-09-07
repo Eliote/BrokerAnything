@@ -137,7 +137,14 @@ function BrokerAnything:CreateOnClick(onClick)
 	end
 end
 
-BrokerAnything.DefaultOnClick = BrokerAnything:CreateOnClick()
+local OnClick = BrokerAnything:CreateOnClick()
+function BrokerAnything.DefaultOnClick(frame, button, broker)
+	if button == "LeftButton" then
+		BrokerAnything:OpenConfigDialog(broker and broker.configPath)
+	elseif button == "RightButton" then
+		return OnClick(frame, button, broker)
+	end
+end
 
 function BrokerAnything:FormatBoolean(b)
 	if b then return L["Yes"] else return L["No"] end

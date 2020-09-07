@@ -25,14 +25,15 @@ local registeredEvents = {}
 
 local defaultInit = "local broker = ...\n\n"
 local defaultOnEvent = "local broker, event, args = ...\n\n"
-local defaultOnTooltip = [[local tooltip = ...
+local defaultOnTooltip = [[local tooltip, broker = ...
 tooltip:AddLine("BrokerAnything!")
 tooltip:Show()
 
 ]]
-local defaultOnClick = [[local self, button = ...
+local defaultOnClick = [[local self, button, broker = ...
 local BrokerAnything = LibStub("AceAddon-3.0"):GetAddon("BrokerAnything")
-BrokerAnything.DefaultOnClick(self, button)
+BrokerAnything.DefaultOnClick(...)
+
 ]]
 
 local function errorhandler(name)
@@ -117,14 +118,15 @@ function module:EnableBroker(name)
 	local brokerInfo = self:GetBrokerInfo(name)
 
 	local brokerName = "BrokerAnything_Custom_" .. name
-	local broker = LibStub("LibDataBroker-1.1"):NewDataObject(brokerName, {
+	local broker
+	broker = LibStub("LibDataBroker-1.1"):NewDataObject(brokerName, {
 		id = brokerName,
 		type = "data source",
 		icon = brokerInfo.icon or "Interface\\Icons\\INV_Misc_QuestionMark",
 		label = name,
 		name = Colors.WHITE .. name .. "|r",
-		OnTooltipShow = function(...) runScript(brokerInfo.tooltipScript, name .. "_Tooltip", ...) end,
-		OnClick = function(...) runScript(brokerInfo.clickScript, name .. "_Click", ...) end,
+		OnTooltipShow = function(tooltip) runScript(brokerInfo.tooltipScript, name .. "_Tooltip", tooltip, broker) end,
+		OnClick = function(frame, buttonName) runScript(brokerInfo.clickScript, name .. "_Click", frame, buttonName, broker) end,
 		configPath = { "custom", self:GetOptionName(name) },
 		category = L["Custom"],
 		tocname = ADDON_NAME

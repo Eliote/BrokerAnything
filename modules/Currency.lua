@@ -116,8 +116,11 @@ function module:AddBroker(currencyId)
 		end,
 		OnClick = BrokerAnything:CreateOnClick(
 				function(_, button)
-					if button ~= "RightButton" then return end
-					return BrokerAnything:CreateMenu(configVariables, module.db, "ids", currencyId, module.OnOptionChanged)
+					if button == "LeftButton" then
+						BrokerAnything:OpenConfigDialog({ "currency", tostring(currencyId) })
+					elseif button == "RightButton" then
+						return BrokerAnything:CreateMenu(configVariables, module.db, "ids", currencyId, module.OnOptionChanged)
+					end
 				end
 		),
 		configPath = { "currency", tostring(currencyId) },

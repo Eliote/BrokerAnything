@@ -55,9 +55,6 @@ local OnClick = function(menu, registry, button, ...)
 			local id = registry.registry.id
 			local title = registry.registry.menuText or ""
 			module:CreateMenu(menu, id, title)
-		elseif (button == "LeftButton") then
-			local broker = LibStub("LibDataBroker-1.1"):GetDataObjectByName(registry.registry.id)
-			BrokerAnything:OpenConfigDialog(broker.configPath)
 		end
 	end
 end

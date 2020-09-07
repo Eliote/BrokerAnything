@@ -248,8 +248,11 @@ function module:AddBroker(factionId)
 			end,
 			OnClick = BrokerAnything:CreateOnClick(
 					function(_, button)
-						if button ~= "RightButton" then return end
-						return BrokerAnything:CreateMenu(configVariables, module.db, "ids", factionId, onOptionChanged)
+						if button == "LeftButton" then
+							BrokerAnything:OpenConfigDialog({ "reputation", tostring(factionId) })
+						elseif button == "RightButton" then
+							return BrokerAnything:CreateMenu(configVariables, module.db, "ids", factionId, module.OnOptionChanged)
+						end
 					end
 			),
 			configPath = { "reputation", tostring(factionId) },
