@@ -19,12 +19,12 @@ local configVariables = {
 		func = function(id)
 			local brokerTable = brokers[id]
 			brokerTable.sessionStart = GetItemCount(id, true)
-			module:updateBroker(brokerTable)
+			module:UpdateBroker(brokerTable)
 		end
 	}
 }
 
-function module:updateBroker(brokerTable)
+function module:UpdateBroker(brokerTable)
 	local itemCount = GetItemCount(brokerTable.id, true)
 
 	local balance = ""
@@ -38,7 +38,7 @@ end
 
 local function updateAll()
 	for _, v in pairs(brokers) do
-		module:updateBroker(v)
+		module:UpdateBroker(v)
 	end
 end
 
@@ -145,11 +145,9 @@ function module:AddBroker(itemID)
 		BrokerAnything:UpdateDatabaseDefaultConfigs(configVariables, db)
 
 		module:AddOption(itemID)
-		module:updateBroker(brokerTable)
+		module:UpdateBroker(brokerTable)
 	end)
 end
-
-module.OnClick = BrokerAnything:CreateOnClick()
 
 local options = {
 	item = {
@@ -222,5 +220,5 @@ function module:RemoveOption(id)
 end
 
 function module:OnOptionChanged()
-	module:updateBroker(brokers[self])
+	module:UpdateBroker(brokers[self])
 end

@@ -23,12 +23,12 @@ local configVariables = {
 			local brokerTable = brokers[id]
 			local info = GetCurrencyInfo(id)
 			brokerTable.sessionStart = info.quantity
-			module:updateBroker(brokerTable)
+			module:UpdateBroker(brokerTable)
 		end
 	}
 }
 
-function module:updateBroker(brokerTable)
+function module:UpdateBroker(brokerTable)
 	local info = GetCurrencyInfo(brokerTable.id)
 	local currencyAmount = info and info.quantity
 
@@ -43,7 +43,7 @@ end
 
 local function updateAll()
 	for _, v in pairs(brokers) do
-		module:updateBroker(v)
+		module:UpdateBroker(v)
 	end
 end
 
@@ -147,10 +147,8 @@ function module:AddBroker(currencyId)
 	BrokerAnything:UpdateDatabaseDefaultConfigs(configVariables, db)
 
 	module:AddOption(currencyId)
-	module:updateBroker(brokerTable)
+	module:UpdateBroker(brokerTable)
 end
-
-module.OnClick = BrokerAnything:CreateOnClick()
 
 local options = {
 	currency = {
@@ -225,5 +223,5 @@ function module:RemoveOption(id)
 end
 
 function module:OnOptionChanged()
-	module:updateBroker(brokers[self])
+	module:UpdateBroker(brokers[self])
 end

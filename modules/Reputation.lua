@@ -26,7 +26,7 @@ local configVariables = {
 			local brokerTable = brokers[id]
 			local _, _, _, _, _, repValue = GetFactionInfoByID(id)
 			brokerTable.sessionStart = repValue
-			module:updateBroker(brokerTable)
+			module:UpdateBroker(brokerTable)
 		end
 	}
 }
@@ -46,7 +46,7 @@ local icons = {
 
 local GetFactionInfoByID = GetFactionInfoByID
 
-function module:updateBroker(brokerTable)
+function module:UpdateBroker(brokerTable)
 	local text = module:GetButtonText(brokerTable.id)
 
 	brokerTable.broker.icon = module.db.profile.ids[brokerTable.id].icon
@@ -56,7 +56,7 @@ end
 
 local function updateAll()
 	for _, v in pairs(brokers) do
-		module:updateBroker(v)
+		module:UpdateBroker(v)
 	end
 end
 
@@ -124,7 +124,7 @@ local function getStandColor(standingId)
 end
 
 local function onOptionChanged(id)
-	module:updateBroker(brokers[id])
+	module:UpdateBroker(brokers[id])
 	-- override the option so it gets updated
 	module:AddOption(id)
 end
@@ -278,7 +278,7 @@ function module:AddBroker(factionId)
 
 	module:AddOption(factionId)
 
-	module:updateBroker(brokerTable)
+	module:UpdateBroker(brokerTable)
 end
 
 function module:GetValueAndMaximum(standingId, barValue, bottomValue, topValue, factionId)

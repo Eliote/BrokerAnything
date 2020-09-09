@@ -63,13 +63,11 @@ function module:OnEnable()
 	BrokerAnything:RegisterOnClick(OnClick)
 end
 
-local categories = LibStub("AceLocale-3.0"):GetLocale(TITAN_ID, true)["TITAN_PANEL_MENU_CATEGORIES"]
-
 local function addCategory(name)
 	if not name then return end
 	if (ElioteUtils.contains(TITAN_PANEL_BUTTONS_PLUGIN_CATEGORY, name)) then return end
 
-	table.insert(categories, "BrokerAnything [" .. name .. "]")
+	table.insert(L["TITAN_PANEL_MENU_CATEGORIES"], "BrokerAnything [" .. name .. "]")
 	table.insert(TITAN_PANEL_BUTTONS_PLUGIN_CATEGORY, name)
 end
 
