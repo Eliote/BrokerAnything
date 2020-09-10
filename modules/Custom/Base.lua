@@ -124,11 +124,13 @@ function module:EnableBroker(name)
 		type = "data source",
 		icon = brokerInfo.icon or "Interface\\Icons\\INV_Misc_QuestionMark",
 		label = name,
-		name = Colors.WHITE .. name .. "|r",
+		brokerAnything = {
+			name = Colors.WHITE .. name .. "|r",
+			configPath = { "custom", self:GetOptionName(name) },
+			category = L["Custom"],
+		},
 		OnTooltipShow = function(tooltip) runScript(brokerInfo.tooltipScript, name .. "_Tooltip", tooltip, broker) end,
 		OnClick = function(frame, buttonName) runScript(brokerInfo.clickScript, name .. "_Click", frame, buttonName, broker) end,
-		configPath = { "custom", self:GetOptionName(name) },
-		category = L["Custom"],
 		tocname = ADDON_NAME
 	})
 

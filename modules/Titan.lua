@@ -81,7 +81,7 @@ TitanUtils_GetPlugin = function(id, ...)
 			if (baModule.brokers) then
 				for _, brokerTable in pairs(baModule.brokers) do
 					if (brokerTable.broker.type == "data source" and brokerTable.broker.id == id) then
-						plugin.category = brokerTable.broker.category
+						plugin.category = brokerTable.broker.brokerAnything.category
 						addCategory(plugin.category)
 						return plugin
 					end

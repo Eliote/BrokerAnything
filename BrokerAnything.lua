@@ -152,7 +152,7 @@ end
 local OnClick = BrokerAnything:CreateOnClick()
 function BrokerAnything.DefaultOnClick(frame, button, broker)
 	if button == "LeftButton" then
-		BrokerAnything:OpenConfigDialog(broker and broker.configPath)
+		BrokerAnything:OpenConfigDialog(broker and broker.brokerAnything and broker.brokerAnything.configPath)
 	elseif button == "RightButton" then
 		return OnClick(frame, button, broker)
 	end

@@ -44,7 +44,7 @@ function broker.OnTooltipShow(tip)
 			tip:AddLine(baModule.brokerTitle or "")
 			for id, brokerTable in pairs(filteredBrokers) do
 				if (brokerTable.broker.type == "data source") then
-					local nameWithIcon = textWithIcon(brokerTable.broker.name or id, brokerTable.broker.icon)
+					local nameWithIcon = textWithIcon(brokerTable.broker.brokerAnything.name or id, brokerTable.broker.icon)
 					tip:AddDoubleLine(nameWithIcon, brokerTable.broker.text)
 				end
 			end
@@ -117,7 +117,7 @@ local options = {
 						if (baModule.brokers) then
 							for id, brokerTable in pairs(baModule.brokers) do
 								if (brokerTable.broker.type == "data source") then
-									t[brokerTable.broker.id] = textWithIcon(brokerTable.broker.name or id, brokerTable.broker.icon)
+									t[brokerTable.broker.id] = textWithIcon(brokerTable.broker.brokerAnything.name or id, brokerTable.broker.icon)
 								end
 							end
 						end

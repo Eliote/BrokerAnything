@@ -93,7 +93,11 @@ function module:AddBroker(currencyId)
 		type = "data source",
 		icon = icon or "Interface\\Icons\\INV_Misc_QuestionMark",
 		label = currencyName or currencyId,
-		name = Colors.WHITE .. (currencyName or currencyId) .. "|r",
+		brokerAnything = {
+			name = Colors.WHITE .. (currencyName or currencyId) .. "|r",
+			configPath = { "currency", tostring(currencyId) },
+			category = L["Currency"],
+		},
 		OnTooltipShow = function(tooltip)
 			local info = GetCurrencyInfo(currencyId)
 			local amount, maximum = info.quantity, info.maxQuantity
@@ -123,8 +127,6 @@ function module:AddBroker(currencyId)
 					end
 				end
 		),
-		configPath = { "currency", tostring(currencyId) },
-		category = L["Currency"],
 		tocname = ADDON_NAME
 	})
 

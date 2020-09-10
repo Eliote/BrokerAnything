@@ -97,7 +97,11 @@ function module:AddBroker(itemID)
 			type = "data source",
 			icon = itemIcon or "Interface\\Icons\\INV_Misc_QuestionMark",
 			label = itemName,
-			name = name,
+			brokerAnything = {
+				name = name,
+				configPath = { "item", tostring(itemID) },
+				category = L["Item"],
+			},
 			OnTooltipShow = function(tooltip)
 				tooltip:SetHyperlink(itemLink)
 
@@ -126,8 +130,6 @@ function module:AddBroker(itemID)
 						end
 					end
 			),
-			configPath = { "item", tostring(itemID) },
-			category = L["Item"],
 			tocname = ADDON_NAME
 		})
 

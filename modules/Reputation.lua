@@ -186,7 +186,11 @@ function module:AddBroker(factionId)
 			type = "data source",
 			icon = icon or "Interface\\Icons\\INV_MISC_NOTE_03",
 			label = name,
-			name = name,
+			brokerAnything = {
+				name = name,
+				configPath = { "reputation", tostring(factionId) },
+				category = L["Reputation"],
+			},
 			OnTooltipShow = function(tooltip)
 				if not brokers[factionId] then return end
 
@@ -255,8 +259,6 @@ function module:AddBroker(factionId)
 						end
 					end
 			),
-			configPath = { "reputation", tostring(factionId) },
-			category = L["Reputation"],
 			tocname = ADDON_NAME
 		})
 	}
