@@ -303,6 +303,8 @@ function BrokerAnything:OpenConfigDialog(configPath)
 	-- Hack to fix TreeGroup dragger, allowing it to resize without the need to move/resize the whole dialog first
 	-- Issue: https://www.wowace.com/projects/ace3/issues/529
 	local dialogFrame = AceConfigDialog.OpenFrames[ADDON_NAME].frame
-	dialogFrame:StartMoving()
-	dialogFrame:StopMovingOrSizing()
+	C_Timer.After(0, function()
+		dialogFrame:StartMoving()
+		dialogFrame:StopMovingOrSizing()
+	end)
 end
