@@ -70,6 +70,18 @@ function BrokerAnything:OnInitialize()
 
 	local AceDialog = LibStub("AceConfigDialog-3.0")
 	self.optionsFrame = AceDialog:AddToBlizOptions(ADDON_NAME)
+
+	-- Hack to fix TreeGroup dragger in BlizOptions
+	self.optionsFrame:HookScript("OnShow", function(self)
+		local parent = self:GetParent()
+		if parent then
+			local movable = parent:IsMovable()
+			parent:SetMovable(true)
+			parent:StartMoving()
+			parent:StopMovingOrSizing()
+			parent:SetMovable(movable)
+		end
+	end)
 end
 
 function BrokerAnything:FormatBalance(value, tooltip)
