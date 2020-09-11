@@ -12,7 +12,7 @@ local Colors = BrokerAnything.Colors
 local ElioteUtils = LibStub("LibElioteUtils-1.0")
 local LibDeflate = LibStub("LibDeflate")
 
----@type table<CustomBrokerInfo>
+---@type table<string, CustomBrokerInfo>
 local brokersTable = {}
 module.brokers = brokersTable
 module.brokerTitle = L["Custom"]
@@ -74,7 +74,16 @@ function module:OnEnable()
 	}
 
 	self.db = BrokerAnything.db:RegisterNamespace("CustomModule", defaults)
+	self.db.RegisterCallback(self, "OnProfileChanged", "RefreshDb")
+	self.db.RegisterCallback(self, "OnProfileCopied", "RefreshDb")
+	self.db.RegisterCallback(self, "OnProfileReset", "RefreshDb")
+	self:RefreshDb()
+end
 
+function module:RefreshDb()
+	for name, _ in pairs(brokersTable) do
+		module:RemoveBroker(name, true)
+	end
 	for name, _ in pairs(self.db.profile.brokers) do
 		if (name) then self:AddOrUpdateBroker(name) end
 	end
@@ -87,12 +96,13 @@ function module:OnDisable()
 	end
 end
 
-function module:RemoveBroker(name)
+function module:RemoveBroker(name, keepDatabase)
 	self:DisableBroker(name)
-	self:SetBrokerInfo(name, nil)
+	if not keepDatabase then
+		self:SetBrokerInfo(name, nil)
+		print(L["Reload UI to take effect!"])
+	end
 	self:SetOption(name, nil)
-
-	print(L["Reload UI to take effect!"])
 end
 
 function module:AddOrUpdateBroker(name)

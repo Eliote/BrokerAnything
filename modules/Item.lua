@@ -50,12 +50,22 @@ function module:OnEnable()
 	}
 
 	self.db = BrokerAnything.db:RegisterNamespace("ItemModule", defaults)
+	self.db.RegisterCallback(self, "OnProfileChanged", "RefreshDb")
+	self.db.RegisterCallback(self, "OnProfileCopied", "RefreshDb")
+	self.db.RegisterCallback(self, "OnProfileReset", "RefreshDb")
+	self:RefreshDb()
+
+	self:RegisterEvent('BAG_UPDATE_DELAYED')
+end
+
+function module:RefreshDb()
+	for name, _ in pairs(brokers) do
+		module:RemoveBroker(name)
+	end
 
 	for k, v in pairs(self.db.profile.ids) do
 		if (v) then module:AddBroker(k) end
 	end
-
-	self:RegisterEvent('BAG_UPDATE_DELAYED')
 end
 
 function module:BAG_UPDATE_DELAYED()
@@ -223,4 +233,12 @@ end
 
 function module:OnOptionChanged()
 	module:UpdateBroker(brokers[self])
+end
+
+--- this will NOT remove the broker from the database
+function module:RemoveBroker(name)
+	module:RemoveOption(name)
+	brokers[name].broker.value = nil
+	brokers[name].broker.text = L["Reload UI!"]
+	brokers[name] = nil
 end

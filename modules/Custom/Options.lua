@@ -79,7 +79,7 @@ function module:AddToOptions(name)
 			if empty(icon) then
 				return "Interface\\Icons\\INV_Misc_QuestionMark"
 			end
-			return module:GetBrokerInfo(name).icon
+			return icon
 		end,
 		type = "group",
 		childGroups = "tab",

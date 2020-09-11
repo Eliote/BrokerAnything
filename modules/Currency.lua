@@ -55,12 +55,22 @@ function module:OnEnable()
 	}
 
 	self.db = BrokerAnything.db:RegisterNamespace("CurrencyModule", defaults)
+	self.db.RegisterCallback(self, "OnProfileChanged", "RefreshDb")
+	self.db.RegisterCallback(self, "OnProfileCopied", "RefreshDb")
+	self.db.RegisterCallback(self, "OnProfileReset", "RefreshDb")
+	self:RefreshDb()
+
+	self:RegisterEvent("CURRENCY_DISPLAY_UPDATE", updateAll)
+end
+
+function module:RefreshDb()
+	for name, _ in pairs(brokers) do
+		module:RemoveBroker(name)
+	end
 
 	for k, v in pairs(self.db.profile.ids) do
 		if (v) then module:AddBroker(k) end
 	end
-
-	self:RegisterEvent("CURRENCY_DISPLAY_UPDATE", updateAll)
 end
 
 function module:AddBroker(currencyId)
@@ -181,10 +191,7 @@ local options = {
 				width = 'full',
 				set = function(info, value)
 					module.db.profile.ids[value] = nil
-					module:RemoveOption(value)
-					brokers[value].broker.value = nil
-					brokers[value].broker.text = L["Reload UI!"]
-					brokers[value] = nil
+					module:RemoveBroker(value)
 					print(L["Reload UI to take effect!"])
 				end,
 				get = function(info) end,
@@ -221,9 +228,17 @@ function module:AddOption(id)
 end
 
 function module:RemoveOption(id)
-	options.item.args[tostring(id)] = nil
+	options.currency.args[tostring(id)] = nil
 end
 
 function module:OnOptionChanged()
 	module:UpdateBroker(brokers[self])
+end
+
+--- this will NOT remove the broker from the database
+function module:RemoveBroker(name)
+	module:RemoveOption(name)
+	brokers[name].broker.value = nil
+	brokers[name].broker.text = L["Reload UI!"]
+	brokers[name] = nil
 end

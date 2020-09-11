@@ -137,12 +137,22 @@ function module:OnEnable()
 	}
 
 	self.db = BrokerAnything.db:RegisterNamespace("ReputationModule", defaults)
+	self.db.RegisterCallback(self, "OnProfileChanged", "RefreshDb")
+	self.db.RegisterCallback(self, "OnProfileCopied", "RefreshDb")
+	self.db.RegisterCallback(self, "OnProfileReset", "RefreshDb")
+	self:RefreshDb()
+
+	self:RegisterEvent('UPDATE_FACTION')
+end
+
+function module:RefreshDb()
+	for name, _ in pairs(brokers) do
+		module:RemoveBroker(name)
+	end
 
 	for k, v in pairs(self.db.profile.ids) do
 		if (v) then module:AddBroker(k) end
 	end
-
-	self:RegisterEvent('UPDATE_FACTION')
 end
 
 function module:UPDATE_FACTION()
@@ -384,10 +394,7 @@ local options = {
 				width = 'full',
 				set = function(info, value)
 					module.db.profile.ids[value] = nil
-					module:RemoveOption(value)
-					brokers[value].broker.value = nil
-					brokers[value].broker.text = L["Reload UI!"]
-					brokers[value] = nil
+					module:RemoveBroker(value)
 					print(L["Reload UI to take effect!"])
 				end,
 				get = function(info) end,
@@ -424,4 +431,12 @@ end
 
 function module:RemoveOption(id)
 	options.reputation.args[tostring(id)] = nil
+end
+
+--- this will NOT remove the broker from the database
+function module:RemoveBroker(name)
+	module:RemoveOption(name)
+	brokers[name].broker.value = nil
+	brokers[name].broker.text = L["Reload UI!"]
+	brokers[name] = nil
 end
