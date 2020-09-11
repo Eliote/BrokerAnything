@@ -117,6 +117,8 @@ Este script é executado quando o broker é clicado.]]
 	L["Icon"] = "Icone"
 	L["Name/Icon"] = "Nome/Icone"
 	L["Reset session balance"] = "Redefinir o saldo da sessão"
+	L["Minimap Broker"] = "Broker do Minimapa"
+	L["Minimap broker configuration"] = "Configurações do Broker do minimapa"
 	--@end-debug@
 
 	return
