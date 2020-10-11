@@ -19,12 +19,12 @@ local configVariables = {
 		func = function(id)
 			local brokerTable = brokers[id]
 			brokerTable.sessionStart = GetItemCount(id, true)
-			module:updateBroker(brokerTable)
+			module:UpdateBroker(brokerTable)
 		end
 	}
 }
 
-function module:updateBroker(brokerTable)
+function module:UpdateBroker(brokerTable)
 	local itemCount = GetItemCount(brokerTable.id, true)
 
 	local balance = ""
@@ -38,7 +38,7 @@ end
 
 local function updateAll()
 	for _, v in pairs(brokers) do
-		module:updateBroker(v)
+		module:UpdateBroker(v)
 	end
 end
 
@@ -50,12 +50,22 @@ function module:OnEnable()
 	}
 
 	self.db = BrokerAnything.db:RegisterNamespace("ItemModule", defaults)
+	self.db.RegisterCallback(self, "OnProfileChanged", "RefreshDb")
+	self.db.RegisterCallback(self, "OnProfileCopied", "RefreshDb")
+	self.db.RegisterCallback(self, "OnProfileReset", "RefreshDb")
+	self:RefreshDb()
+
+	self:RegisterEvent('BAG_UPDATE_DELAYED')
+end
+
+function module:RefreshDb()
+	for name, _ in pairs(brokers) do
+		module:RemoveBroker(name)
+	end
 
 	for k, v in pairs(self.db.profile.ids) do
 		if (v) then module:AddBroker(k) end
 	end
-
-	self:RegisterEvent('BAG_UPDATE_DELAYED')
 end
 
 function module:BAG_UPDATE_DELAYED()
@@ -96,8 +106,12 @@ function module:AddBroker(itemID)
 			id = brokerName,
 			type = "data source",
 			icon = itemIcon or "Interface\\Icons\\INV_Misc_QuestionMark",
-			label = L["BA (item) - "] .. itemName,
-			name = name,
+			label = itemName,
+			brokerAnything = {
+				name = name,
+				configPath = { "item", tostring(itemID) },
+				category = L["Item"],
+			},
 			OnTooltipShow = function(tooltip)
 				tooltip:SetHyperlink(itemLink)
 
@@ -119,12 +133,14 @@ function module:AddBroker(itemID)
 			end,
 			OnClick = BrokerAnything:CreateOnClick(
 					function(_, button)
-						if button ~= "RightButton" then return end
-						return BrokerAnything:CreateMenu(configVariables, module.db, "ids", itemID, module.OnOptionChanged)
+						if button == "LeftButton" then
+							BrokerAnything:OpenConfigDialog({ "item", tostring(itemID) })
+						elseif button == "RightButton" then
+							return BrokerAnything:CreateMenu(configVariables, module.db, "ids", itemID, module.OnOptionChanged)
+						end
 					end
 			),
-			configPath = { "item", tostring(itemID) },
-			category = L["Item"]
+			tocname = ADDON_NAME
 		})
 
 		if (not brokerTable.broker) then
@@ -141,11 +157,9 @@ function module:AddBroker(itemID)
 		BrokerAnything:UpdateDatabaseDefaultConfigs(configVariables, db)
 
 		module:AddOption(itemID)
-		module:updateBroker(brokerTable)
+		module:UpdateBroker(brokerTable)
 	end)
 end
-
-module.OnClick = BrokerAnything:CreateOnClick()
 
 local options = {
 	item = {
@@ -218,5 +232,13 @@ function module:RemoveOption(id)
 end
 
 function module:OnOptionChanged()
-	module:updateBroker(brokers[self])
+	module:UpdateBroker(brokers[self])
+end
+
+--- this will NOT remove the broker from the database
+function module:RemoveBroker(name)
+	module:RemoveOption(name)
+	brokers[name].broker.value = nil
+	brokers[name].broker.text = L["Reload UI!"]
+	brokers[name] = nil
 end

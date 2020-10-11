@@ -8,7 +8,7 @@ do
 	--[[-----------------------------------------------------------------------------
 		InteractiveLabel Widget
 	-------------------------------------------------------------------------------]]
-	local Type, Version = "AsyncSearchEditBox_Base", 2
+	local Type, Version = "AsyncSearchEditBox_Base", 3
 	local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 	if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -339,7 +339,7 @@ do
 			ClearCursor()
 			HideButton(self)
 			AceGUI:ClearFocus()
-			hidePredictor(this)
+			hidePredictor(frame)
 		end
 	end
 
@@ -374,7 +374,7 @@ do
 
 	-- This function is only executed once and them removed, because the same predictor frame is used for all widgets
 	local function CreatePredictorFrame(num)
-		local predictor = CreateFrame("Frame", "AceGUI30AsyncSearchEditBox" .. num .. "Predictor", UIParent)
+		local predictor = CreateFrame("Frame", "AceGUI30AsyncSearchEditBox" .. num .. "Predictor", UIParent, BackdropTemplateMixin and "BackdropTemplate")
 		predictor:SetBackdrop(predictorBackdrop)
 		predictor:SetBackdropColor(0, 0, 0, 0.85)
 		predictor:SetFrameStrata("TOOLTIP")

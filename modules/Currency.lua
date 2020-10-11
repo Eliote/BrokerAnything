@@ -7,6 +7,9 @@ local module = BrokerAnything:NewModule("CurrencyModule", "AceEvent-3.0")
 local Colors = BrokerAnything.Colors
 local ElioteUtils = LibStub("LibElioteUtils-1.0")
 
+local GetCurrencyInfo = C_CurrencyInfo.GetCurrencyInfo
+local GetCurrencyLink = C_CurrencyInfo.GetCurrencyLink
+
 local brokers = {}
 module.brokers = brokers
 module.brokerTitle = L["Currency"]
@@ -18,15 +21,16 @@ local configVariables = {
 		type = "func",
 		func = function(id)
 			local brokerTable = brokers[id]
-			local _, currencyAmount = GetCurrencyInfo(id)
-			brokerTable.sessionStart = currencyAmount
-			module:updateBroker(brokerTable)
+			local info = GetCurrencyInfo(id)
+			brokerTable.sessionStart = info.quantity
+			module:UpdateBroker(brokerTable)
 		end
 	}
 }
 
-function module:updateBroker(brokerTable)
-	local _, currencyAmount = GetCurrencyInfo(brokerTable.id)
+function module:UpdateBroker(brokerTable)
+	local info = GetCurrencyInfo(brokerTable.id)
+	local currencyAmount = info and info.quantity
 
 	local balance = ""
 	if (module.db.profile.ids[brokerTable.id].showBalance) then
@@ -39,7 +43,7 @@ end
 
 local function updateAll()
 	for _, v in pairs(brokers) do
-		module:updateBroker(v)
+		module:UpdateBroker(v)
 	end
 end
 
@@ -51,12 +55,22 @@ function module:OnEnable()
 	}
 
 	self.db = BrokerAnything.db:RegisterNamespace("CurrencyModule", defaults)
+	self.db.RegisterCallback(self, "OnProfileChanged", "RefreshDb")
+	self.db.RegisterCallback(self, "OnProfileCopied", "RefreshDb")
+	self.db.RegisterCallback(self, "OnProfileReset", "RefreshDb")
+	self:RefreshDb()
+
+	self:RegisterEvent("CURRENCY_DISPLAY_UPDATE", updateAll)
+end
+
+function module:RefreshDb()
+	for name, _ in pairs(brokers) do
+		module:RemoveBroker(name)
+	end
 
 	for k, v in pairs(self.db.profile.ids) do
 		if (v) then module:AddBroker(k) end
 	end
-
-	self:RegisterEvent("CURRENCY_DISPLAY_UPDATE", updateAll)
 end
 
 function module:AddBroker(currencyId)
@@ -70,12 +84,13 @@ function module:AddBroker(currencyId)
 		return
 	end
 
-	local currencyName, currencyAmount, icon = GetCurrencyInfo(currencyId)
-
-	if (ElioteUtils.empty(currencyName)) then
+	local info = GetCurrencyInfo(currencyId)
+	if (not info) then
 		print(L("No currency with id '${id}' found!", { id = currencyId }))
 		return
 	end
+
+	local currencyName, currencyAmount, icon = info.name, info.quantity, info.iconFileID
 
 	local brokerTable = {
 		id = currencyId,
@@ -87,10 +102,15 @@ function module:AddBroker(currencyId)
 		id = brokerName,
 		type = "data source",
 		icon = icon or "Interface\\Icons\\INV_Misc_QuestionMark",
-		label = L["BA (currency) - "] .. currencyName or currencyId,
-		name = Colors.WHITE .. (currencyName or currencyId) .. "|r",
+		label = currencyName or currencyId,
+		brokerAnything = {
+			name = Colors.WHITE .. (currencyName or currencyId) .. "|r",
+			configPath = { "currency", tostring(currencyId) },
+			category = L["Currency"],
+		},
 		OnTooltipShow = function(tooltip)
-			local _, amount, _, _, _, maximum = GetCurrencyInfo(currencyId)
+			local info = GetCurrencyInfo(currencyId)
+			local amount, maximum = info.quantity, info.maxQuantity
 			local link = GetCurrencyLink(currencyId, amount)
 			tooltip:SetHyperlink(link)
 
@@ -110,12 +130,14 @@ function module:AddBroker(currencyId)
 		end,
 		OnClick = BrokerAnything:CreateOnClick(
 				function(_, button)
-					if button ~= "RightButton" then return end
-					return BrokerAnything:CreateMenu(configVariables, module.db, "ids", currencyId, module.OnOptionChanged)
+					if button == "LeftButton" then
+						BrokerAnything:OpenConfigDialog({ "currency", tostring(currencyId) })
+					elseif button == "RightButton" then
+						return BrokerAnything:CreateMenu(configVariables, module.db, "ids", currencyId, module.OnOptionChanged)
+					end
 				end
 		),
-		configPath = { "currency", tostring(currencyId) },
-		category = L["Currency"]
+		tocname = ADDON_NAME
 	})
 
 	if (not brokerTable.broker) then
@@ -137,10 +159,8 @@ function module:AddBroker(currencyId)
 	BrokerAnything:UpdateDatabaseDefaultConfigs(configVariables, db)
 
 	module:AddOption(currencyId)
-	module:updateBroker(brokerTable)
+	module:UpdateBroker(brokerTable)
 end
-
-module.OnClick = BrokerAnything:CreateOnClick()
 
 local options = {
 	currency = {
@@ -171,10 +191,7 @@ local options = {
 				width = 'full',
 				set = function(info, value)
 					module.db.profile.ids[value] = nil
-					module:RemoveOption(value)
-					brokers[value].broker.value = nil
-					brokers[value].broker.text = L["Reload UI!"]
-					brokers[value] = nil
+					module:RemoveBroker(value)
 					print(L["Reload UI to take effect!"])
 				end,
 				get = function(info) end,
@@ -182,9 +199,9 @@ local options = {
 					local values = {}
 
 					for id, _ in pairs(module.db.profile.ids) do
-						local _, currencyAmount, icon = GetCurrencyInfo(id)
-						local link = GetCurrencyLink(id, currencyAmount)
-						values[id] = ElioteUtils.getTexture(icon) .. link .. " |cFFAAAAAA(id:" .. id .. ")|r"
+						local info = GetCurrencyInfo(id)
+						local link = GetCurrencyLink(id, info.quantity)
+						values[id] = ElioteUtils.getTexture(info.iconFileID) .. link .. " |cFFAAAAAA(id:" .. id .. ")|r"
 					end
 
 					return values
@@ -211,9 +228,17 @@ function module:AddOption(id)
 end
 
 function module:RemoveOption(id)
-	options.item.args[tostring(id)] = nil
+	options.currency.args[tostring(id)] = nil
 end
 
 function module:OnOptionChanged()
-	module:updateBroker(brokers[self])
+	module:UpdateBroker(brokers[self])
+end
+
+--- this will NOT remove the broker from the database
+function module:RemoveBroker(name)
+	module:RemoveOption(name)
+	brokers[name].broker.value = nil
+	brokers[name].broker.text = L["Reload UI!"]
+	brokers[name] = nil
 end

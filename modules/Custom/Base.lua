@@ -12,7 +12,7 @@ local Colors = BrokerAnything.Colors
 local ElioteUtils = LibStub("LibElioteUtils-1.0")
 local LibDeflate = LibStub("LibDeflate")
 
----@type table<CustomBrokerInfo>
+---@type table<string, CustomBrokerInfo>
 local brokersTable = {}
 module.brokers = brokersTable
 module.brokerTitle = L["Custom"]
@@ -25,14 +25,15 @@ local registeredEvents = {}
 
 local defaultInit = "local broker = ...\n\n"
 local defaultOnEvent = "local broker, event, args = ...\n\n"
-local defaultOnTooltip = [[local tooltip = ...
+local defaultOnTooltip = [[local tooltip, broker = ...
 tooltip:AddLine("BrokerAnything!")
 tooltip:Show()
 
 ]]
-local defaultOnClick = [[local self, button = ...
+local defaultOnClick = [[local self, button, broker = ...
 local BrokerAnything = LibStub("AceAddon-3.0"):GetAddon("BrokerAnything")
-BrokerAnything.DefaultOnClick(self, button)
+BrokerAnything.DefaultOnClick(...)
+
 ]]
 
 local function errorhandler(name)
@@ -73,7 +74,16 @@ function module:OnEnable()
 	}
 
 	self.db = BrokerAnything.db:RegisterNamespace("CustomModule", defaults)
+	self.db.RegisterCallback(self, "OnProfileChanged", "RefreshDb")
+	self.db.RegisterCallback(self, "OnProfileCopied", "RefreshDb")
+	self.db.RegisterCallback(self, "OnProfileReset", "RefreshDb")
+	self:RefreshDb()
+end
 
+function module:RefreshDb()
+	for name, _ in pairs(brokersTable) do
+		module:RemoveBroker(name, true)
+	end
 	for name, _ in pairs(self.db.profile.brokers) do
 		if (name) then self:AddOrUpdateBroker(name) end
 	end
@@ -86,12 +96,13 @@ function module:OnDisable()
 	end
 end
 
-function module:RemoveBroker(name)
+function module:RemoveBroker(name, keepDatabase)
 	self:DisableBroker(name)
-	self:SetBrokerInfo(name, nil)
+	if not keepDatabase then
+		self:SetBrokerInfo(name, nil)
+		print(L["Reload UI to take effect!"])
+	end
 	self:SetOption(name, nil)
-
-	print(L["Reload UI to take effect!"])
 end
 
 function module:AddOrUpdateBroker(name)
@@ -117,16 +128,20 @@ function module:EnableBroker(name)
 	local brokerInfo = self:GetBrokerInfo(name)
 
 	local brokerName = "BrokerAnything_Custom_" .. name
-	local broker = LibStub("LibDataBroker-1.1"):NewDataObject(brokerName, {
+	local broker
+	broker = LibStub("LibDataBroker-1.1"):NewDataObject(brokerName, {
 		id = brokerName,
 		type = "data source",
 		icon = brokerInfo.icon or "Interface\\Icons\\INV_Misc_QuestionMark",
-		label = L["BA (custom) - "] .. name,
-		name = Colors.WHITE .. name .. "|r",
-		OnTooltipShow = function(...) runScript(brokerInfo.tooltipScript, name .. "_Tooltip", ...) end,
-		OnClick = function(...) runScript(brokerInfo.clickScript, name .. "_Click", ...) end,
-		configPath = { "custom", self:GetOptionName(name) },
-		category = L["Custom"]
+		label = name,
+		brokerAnything = {
+			name = Colors.WHITE .. name .. "|r",
+			configPath = { "custom", self:GetOptionName(name) },
+			category = L["Custom"],
+		},
+		OnTooltipShow = function(tooltip) runScript(brokerInfo.tooltipScript, name .. "_Tooltip", tooltip, broker) end,
+		OnClick = function(frame, buttonName) runScript(brokerInfo.clickScript, name .. "_Click", frame, buttonName, broker) end,
+		tocname = ADDON_NAME
 	})
 
 	if (not broker) then

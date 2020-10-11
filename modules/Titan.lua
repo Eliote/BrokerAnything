@@ -8,7 +8,6 @@ if not L then return end
 local BrokerAnything = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
 local module = BrokerAnything:NewModule("TitanModule", "AceEvent-3.0")
 
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 ---@type ElioteUtils
 local ElioteUtils = LibStub("LibElioteUtils-1.0")
 
@@ -56,12 +55,6 @@ local OnClick = function(menu, registry, button, ...)
 			local id = registry.registry.id
 			local title = registry.registry.menuText or ""
 			module:CreateMenu(menu, id, title)
-		elseif (button == "LeftButton") then
-			local broker = LibStub("LibDataBroker-1.1"):GetDataObjectByName(registry.registry.id)
-			AceConfigDialog:Open(ADDON_NAME)
-			if broker.configPath then
-				AceConfigDialog:SelectGroup(ADDON_NAME, unpack(broker.configPath))
-			end
 		end
 	end
 end
@@ -70,13 +63,11 @@ function module:OnEnable()
 	BrokerAnything:RegisterOnClick(OnClick)
 end
 
-local categories = LibStub("AceLocale-3.0"):GetLocale(TITAN_ID, true)["TITAN_PANEL_MENU_CATEGORIES"]
-
 local function addCategory(name)
 	if not name then return end
 	if (ElioteUtils.contains(TITAN_PANEL_BUTTONS_PLUGIN_CATEGORY, name)) then return end
 
-	table.insert(categories, "BrokerAnything [" .. name .. "]")
+	table.insert(L["TITAN_PANEL_MENU_CATEGORIES"], "BrokerAnything [" .. name .. "]")
 	table.insert(TITAN_PANEL_BUTTONS_PLUGIN_CATEGORY, name)
 end
 
@@ -90,7 +81,7 @@ TitanUtils_GetPlugin = function(id, ...)
 			if (baModule.brokers) then
 				for _, brokerTable in pairs(baModule.brokers) do
 					if (brokerTable.broker.type == "data source" and brokerTable.broker.id == id) then
-						plugin.category = brokerTable.broker.category
+						plugin.category = brokerTable.broker.brokerAnything.category
 						addCategory(plugin.category)
 						return plugin
 					end

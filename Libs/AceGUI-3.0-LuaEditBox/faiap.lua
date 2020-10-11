@@ -31,7 +31,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -- @see lib.Tokens
 
 -- I'm making it a real lib with LibStub
-local MAJOR, MINOR = "ForAllIndentsAndPurposes-Eliote-1.0", 1
+local MAJOR, MINOR = "ForAllIndentsAndPurposes-Eliote-1.0", 2
 ---@class ForAllIndentsAndPurposes
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 
@@ -686,7 +686,8 @@ local indents = {
 	["else"] = indentBoth
 }
 
-local TERMINATOR = "|r"
+-- since Shadowlands '|r' now just pop the last color change instead of resetting it
+local TERMINATOR = "|r|r|r|r"
 local buffer = {}
 
 --- Syntax highlights and indents a string of Lua code.

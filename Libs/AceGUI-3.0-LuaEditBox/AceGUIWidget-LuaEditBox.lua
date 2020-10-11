@@ -1,4 +1,4 @@
-local Type, Version = "LuaEditBox", 3
+local Type, Version = "LuaEditBox", 4
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -406,7 +406,7 @@ local function Constructor()
 
 	lineScrollFrame:SetScrollChild(lineEditBox)
 
-	local scrollBG = CreateFrame("Frame", nil, frame)
+	local scrollBG = CreateFrame("Frame", nil, frame, BackdropTemplateMixin and "BackdropTemplate")
 	scrollBG:SetBackdrop(backdrop)
 	scrollBG:SetBackdropColor(0, 0, 0)
 	scrollBG:SetBackdropBorderColor(0.4, 0.4, 0.4)

@@ -4,6 +4,10 @@ local ADDON_NAME, _ = ...
 local BrokerAnything = LibStub("AceAddon-3.0"):NewAddon(ADDON_NAME, "AceEvent-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 
+---@type ElioteDropDownMenu
+local EDDM = LibStub("ElioteDropDownMenu-1.0")
+local dropdownFrame = EDDM.UIDropDownMenu_GetOrCreate("BrokerAnythingTitan_MenuFrame")
+
 BrokerAnything.Colors = {
 	WHITE = "|cFFFFFFFF",
 	RED = "|cFFDC2924",
@@ -66,6 +70,18 @@ function BrokerAnything:OnInitialize()
 
 	local AceDialog = LibStub("AceConfigDialog-3.0")
 	self.optionsFrame = AceDialog:AddToBlizOptions(ADDON_NAME)
+
+	-- Hack to fix TreeGroup dragger in BlizOptions
+	self.optionsFrame:HookScript("OnShow", function(self)
+		local parent = self:GetParent()
+		if parent then
+			local movable = parent:IsMovable()
+			parent:SetMovable(true)
+			parent:StartMoving()
+			parent:StopMovingOrSizing()
+			parent:SetMovable(movable)
+		end
+	end)
 end
 
 function BrokerAnything:FormatBalance(value, tooltip)
@@ -91,7 +107,6 @@ function BrokerAnything:FormatBalance(value, tooltip)
 end
 
 local registeredClicks = {}
-local dropdownFrame = CreateFrame("Frame", "BrokerAnythingTitan_MenuFrame", nil, "UIDropDownMenuTemplate")
 function BrokerAnything:RegisterOnClick(onClick)
 	table.insert(registeredClicks, onClick)
 end
@@ -129,12 +144,19 @@ function BrokerAnything:CreateOnClick(onClick)
 				keepShownOnClick = false
 			})
 
-			L_EasyMenu(menu, dropdownFrame, "cursor", 0, 0, "MENU")
+			EDDM.EasyMenu(menu, dropdownFrame, "cursor", 0, 0, "MENU")
 		end
 	end
 end
 
-BrokerAnything.DefaultOnClick = BrokerAnything:CreateOnClick()
+local OnClick = BrokerAnything:CreateOnClick()
+function BrokerAnything.DefaultOnClick(frame, button, broker)
+	if button == "LeftButton" then
+		BrokerAnything:OpenConfigDialog(broker and broker.brokerAnything and broker.brokerAnything.configPath)
+	elseif button == "RightButton" then
+		return OnClick(frame, button, broker)
+	end
+end
 
 function BrokerAnything:FormatBoolean(b)
 	if b then return L["Yes"] else return L["No"] end
@@ -269,4 +291,20 @@ end
 function BrokerAnything:DefaultIfNull(var, default)
 	if var == nil then return default end
 	return var
+end
+
+local AceConfigDialog = LibStub("AceConfigDialog-3.0")
+function BrokerAnything:OpenConfigDialog(configPath)
+	AceConfigDialog:Open(ADDON_NAME)
+	if configPath then
+		AceConfigDialog:SelectGroup(ADDON_NAME, unpack(configPath))
+	end
+
+	-- Hack to fix TreeGroup dragger, allowing it to resize without the need to move/resize the whole dialog first
+	-- Issue: https://www.wowace.com/projects/ace3/issues/529
+	local dialogFrame = AceConfigDialog.OpenFrames[ADDON_NAME].frame
+	C_Timer.After(0, function()
+		dialogFrame:StartMoving()
+		dialogFrame:StopMovingOrSizing()
+	end)
 end

@@ -26,7 +26,7 @@ local configVariables = {
 			local brokerTable = brokers[id]
 			local _, _, _, _, _, repValue = GetFactionInfoByID(id)
 			brokerTable.sessionStart = repValue
-			module:updateBroker(brokerTable)
+			module:UpdateBroker(brokerTable)
 		end
 	}
 }
@@ -46,7 +46,7 @@ local icons = {
 
 local GetFactionInfoByID = GetFactionInfoByID
 
-function module:updateBroker(brokerTable)
+function module:UpdateBroker(brokerTable)
 	local text = module:GetButtonText(brokerTable.id)
 
 	brokerTable.broker.icon = module.db.profile.ids[brokerTable.id].icon
@@ -56,7 +56,7 @@ end
 
 local function updateAll()
 	for _, v in pairs(brokers) do
-		module:updateBroker(v)
+		module:UpdateBroker(v)
 	end
 end
 
@@ -124,7 +124,7 @@ local function getStandColor(standingId)
 end
 
 local function onOptionChanged(id)
-	module:updateBroker(brokers[id])
+	module:UpdateBroker(brokers[id])
 	-- override the option so it gets updated
 	module:AddOption(id)
 end
@@ -137,12 +137,22 @@ function module:OnEnable()
 	}
 
 	self.db = BrokerAnything.db:RegisterNamespace("ReputationModule", defaults)
+	self.db.RegisterCallback(self, "OnProfileChanged", "RefreshDb")
+	self.db.RegisterCallback(self, "OnProfileCopied", "RefreshDb")
+	self.db.RegisterCallback(self, "OnProfileReset", "RefreshDb")
+	self:RefreshDb()
+
+	self:RegisterEvent('UPDATE_FACTION')
+end
+
+function module:RefreshDb()
+	for name, _ in pairs(brokers) do
+		module:RemoveBroker(name)
+	end
 
 	for k, v in pairs(self.db.profile.ids) do
 		if (v) then module:AddBroker(k) end
 	end
-
-	self:RegisterEvent('UPDATE_FACTION')
 end
 
 function module:UPDATE_FACTION()
@@ -186,7 +196,11 @@ function module:AddBroker(factionId)
 			type = "data source",
 			icon = icon or "Interface\\Icons\\INV_MISC_NOTE_03",
 			label = name,
-			name = name,
+			brokerAnything = {
+				name = name,
+				configPath = { "reputation", tostring(factionId) },
+				category = L["Reputation"],
+			},
 			OnTooltipShow = function(tooltip)
 				if not brokers[factionId] then return end
 
@@ -248,12 +262,14 @@ function module:AddBroker(factionId)
 			end,
 			OnClick = BrokerAnything:CreateOnClick(
 					function(_, button)
-						if button ~= "RightButton" then return end
-						return BrokerAnything:CreateMenu(configVariables, module.db, "ids", factionId, onOptionChanged)
+						if button == "LeftButton" then
+							BrokerAnything:OpenConfigDialog({ "reputation", tostring(factionId) })
+						elseif button == "RightButton" then
+							return BrokerAnything:CreateMenu(configVariables, module.db, "ids", factionId, module.OnOptionChanged)
+						end
 					end
 			),
-			configPath = { "reputation", tostring(factionId) },
-			category = L["Reputation"]
+			tocname = ADDON_NAME
 		})
 	}
 
@@ -274,7 +290,7 @@ function module:AddBroker(factionId)
 
 	module:AddOption(factionId)
 
-	module:updateBroker(brokerTable)
+	module:UpdateBroker(brokerTable)
 end
 
 function module:GetValueAndMaximum(standingId, barValue, bottomValue, topValue, factionId)
@@ -378,10 +394,7 @@ local options = {
 				width = 'full',
 				set = function(info, value)
 					module.db.profile.ids[value] = nil
-					module:RemoveOption(value)
-					brokers[value].broker.value = nil
-					brokers[value].broker.text = L["Reload UI!"]
-					brokers[value] = nil
+					module:RemoveBroker(value)
 					print(L["Reload UI to take effect!"])
 				end,
 				get = function(info) end,
@@ -418,4 +431,12 @@ end
 
 function module:RemoveOption(id)
 	options.reputation.args[tostring(id)] = nil
+end
+
+--- this will NOT remove the broker from the database
+function module:RemoveBroker(name)
+	module:RemoveOption(name)
+	brokers[name].broker.value = nil
+	brokers[name].broker.text = L["Reload UI!"]
+	brokers[name] = nil
 end
