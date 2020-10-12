@@ -16,12 +16,13 @@ local LibDeflate = LibStub("LibDeflate")
 local brokersTable = {}
 module.brokers = brokersTable
 module.brokerTitle = L["Custom"]
+module.registeredEvents = {}
 
 local loadstring = ElioteUtils.memoize(loadstring)
 local empty = ElioteUtils.empty
 local xpcall = xpcall
 
-local registeredEvents = {}
+local registeredEvents = module.registeredEvents
 
 local defaultInit = "local broker = ...\n\n"
 local defaultOnEvent = "local broker, event, args = ...\n\n"
@@ -90,8 +91,10 @@ function module:RefreshDb()
 end
 
 function module:OnDisable()
-	for event, _ in ipairs(registeredEvents) do
-		self:UnregisterEvent(event)
+	for event, registered in pairs(registeredEvents) do
+		if (registered) then
+			self:UnregisterEvent(event)
+		end
 		registeredEvents[event] = nil
 	end
 end
@@ -168,12 +171,7 @@ function module:EnableBroker(name)
 
 	runScript(brokerInfo.initScript, name .. "_Initialization", broker)
 
-	for event, _ in pairs(brokerInfo.events) do
-		if (not registeredEvents[event]) then
-			registeredEvents[event] = true
-			self:RegisterEvent(event, OnEvent)
-		end
-	end
+	self:ReloadEvents()
 end
 
 function module:DisableBroker(name)
@@ -197,21 +195,24 @@ end
 
 function module:ReloadEvents()
 	local remainingEvents = {}
+	-- fetch all registered events from all custom brokers
 	for _, brokerTable in pairs(brokersTable) do
 		for event, _ in pairs(brokerTable.brokerInfo.events) do
 			remainingEvents[event] = true
 		end
 	end
+	-- unregister any event missing in the previous list
 	for event, _ in pairs(registeredEvents) do
 		if (not remainingEvents[event]) then
-			self:UnregisterEvent(event, OnEvent)
+			pcall(function() self:UnregisterEvent(event, OnEvent) end)
 			registeredEvents[event] = nil
 		end
 	end
+	-- register all remaining events
 	for event, _ in pairs(remainingEvents) do
-		if (not registeredEvents[event]) then
-			registeredEvents[event] = true
-			self:RegisterEvent(event, OnEvent)
+		if (registeredEvents[event] == nil) then
+			local ok = pcall(function() self:RegisterEvent(event, OnEvent) end)
+			registeredEvents[event] = ok and true or false -- set to false instead of nil when error
 		end
 	end
 end

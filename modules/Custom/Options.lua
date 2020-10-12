@@ -163,7 +163,19 @@ function module:AddToOptions(name)
 									module:ReloadEvents()
 								end,
 								get = function(info) end,
-								values = function() return module:GetBrokerInfo(name).events or {} end,
+								values = function()
+									local events = {}
+									if (module:GetBrokerInfo(name).events) then
+										for k, v in pairs(module:GetBrokerInfo(name).events) do
+											local eventName = v
+											if (module.registeredEvents[k] == false) then
+												eventName = "|cFFFF0000" .. eventName .. "|r"
+											end
+											events[k] = eventName
+										end
+									end
+									return events
+								end,
 								order = 2
 							},
 						}
