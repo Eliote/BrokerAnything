@@ -87,6 +87,50 @@ function module:IsVisible(brokerId)
 	return config.visible ~= false -- defaults to true when nil
 end
 
+local function addToggles(options)
+	local set = function(info, key, state)
+		local config = module.db.profile.brokersConfig[key]
+		if config == nil then
+			config = {}
+			module.db.profile.brokersConfig[key] = config
+		end
+		config.visible = state
+	end
+
+	local get = function(info, key) return module:IsVisible(key) end
+
+	for _, baModule in BrokerAnything:IterateModules() do
+		if baModule.brokers then
+			local name = baModule.brokerTitle or baModule:GetName()
+			local group = {
+				type = 'group',
+				name = name,
+				args = {}
+			}
+			group.args.toggleVisibility = {
+				type = "multiselect",
+				name = L["Hide/Show"],
+				width = "full",
+				hidden = function() return not next(baModule.brokers) end,
+				values = function()
+					local t = {}
+					if (baModule.brokers) then
+						for id, brokerTable in pairs(baModule.brokers) do
+							if (brokerTable.broker.type == "data source") then
+								t[brokerTable.broker.id] = textWithIcon(brokerTable.broker.brokerAnything.name or id, brokerTable.broker.icon)
+							end
+						end
+					end
+					return t
+				end,
+				get = get,
+				set = set
+			}
+			options.minimapBroker.args[name] = group
+		end
+	end
+end
+
 local options = {
 	showMinimap = {
 		type = "toggle",
@@ -106,38 +150,11 @@ local options = {
 		name = L["Minimap Broker"],
 		desc = L["Minimap broker configuration"],
 		order = -1,
-		args = {
-			toggleVisibility = {
-				type = "multiselect",
-				name = L["Hide/Show"],
-				width = "full",
-				values = function()
-					local t = {}
-					for _, baModule in BrokerAnything:IterateModules() do
-						if (baModule.brokers) then
-							for id, brokerTable in pairs(baModule.brokers) do
-								if (brokerTable.broker.type == "data source") then
-									t[brokerTable.broker.id] = textWithIcon(brokerTable.broker.brokerAnything.name or id, brokerTable.broker.icon)
-								end
-							end
-						end
-					end
-					return t
-				end,
-				get = function(info, key) return module:IsVisible(key) end,
-				set = function(info, key, state)
-					local config = module.db.profile.brokersConfig[key]
-					if config == nil then
-						config = {}
-						module.db.profile.brokersConfig[key] = config
-					end
-					config.visible = state
-				end
-			}
-		}
+		args = {}
 	}
 }
 
 function module:GetOptions()
+	addToggles(options)
 	return options
 end
