@@ -74,11 +74,13 @@ function BrokerAnything:OnInitialize()
 	-- Hack to fix TreeGroup dragger in BlizOptions
 	self.optionsFrame:HookScript("OnShow", function(self)
 		local parent = self:GetParent()
+		parent = parent and parent:GetParent()
 		if parent then
 			local movable = parent:IsMovable()
 			parent:SetMovable(true)
 			parent:StartMoving()
 			parent:StopMovingOrSizing()
+			parent:SetUserPlaced(false);
 			parent:SetMovable(movable)
 		end
 	end)
