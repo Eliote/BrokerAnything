@@ -8,8 +8,8 @@ function Predictor:Initialize()
 
 	APIDocumentation_LoadUI()
 
-	for _, event in pairs(APIDocumentation.events) do
-		events[event.LiteralName] = true
+	for index, event in pairs(APIDocumentation.events) do
+		events[event.LiteralName] = index
 	end
 end
 
@@ -24,6 +24,20 @@ function Predictor:GetValues(text, values, max)
 			count = count + 1
 			if (count >= max) then break end
 		end
+	end
+end
+
+function Predictor:GetHyperlink(key)
+	local index = events[key]
+	if (not index or index == true) then return end
+
+	local event = APIDocumentation.events[index]
+	if (event and event.GetDetailedOutputLines) then
+		local lines = event:GetDetailedOutputLines() or {}
+		for _, line in pairs(lines) do
+			GameTooltip:AddLine(line)
+		end
+		GameTooltip:Show()
 	end
 end
 
