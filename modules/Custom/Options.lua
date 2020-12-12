@@ -84,6 +84,14 @@ function module:AddToOptions(name)
 		type = "group",
 		childGroups = "tab",
 		args = {
+			header = {
+				type = "header",
+				name = function()
+					local icon = module:GetBrokerInfo(name).icon
+					return ElioteUtils.getTexture(icon) .. " " .. name
+				end,
+				order = 0
+			},
 			enable = {
 				type = "toggle",
 				name = L["Enable"],

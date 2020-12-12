@@ -225,6 +225,11 @@ function module:AddOption(id)
 		icon = module.db.profile.ids[id].icon,
 		args = BrokerAnything:CreateOptions(configVariables, module.db, "ids", id, module.OnOptionChanged)
 	}
+	args[tostring(id)].args.header = {
+		type = "header",
+		name = ElioteUtils.getTexture(module.db.profile.ids[id].icon) .. " " .. module.db.profile.ids[id].name,
+		order = 0
+	}
 end
 
 function module:RemoveOption(id)
