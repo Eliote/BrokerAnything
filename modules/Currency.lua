@@ -8,7 +8,7 @@ local Colors = BrokerAnything.Colors
 local ElioteUtils = LibStub("LibElioteUtils-1.0")
 
 local GetCurrencyInfo = C_CurrencyInfo.GetCurrencyInfo
-local GetCurrencyLink = C_CurrencyInfo.GetCurrencyLink
+local GetCurrencyLink = C_CurrencyInfo.GetCurrencyLink or nop
 
 local brokers = {}
 module.brokers = brokers
@@ -112,7 +112,11 @@ function module:AddBroker(currencyId)
 			local info = GetCurrencyInfo(currencyId)
 			local amount, maximum = info.quantity, info.maxQuantity
 			local link = GetCurrencyLink(currencyId, amount)
-			tooltip:SetHyperlink(link)
+			if link then
+				tooltip:SetHyperlink(link)
+			else
+				tooltip:AddLine(Colors.WHITE .. info.name)
+			end
 
 			tooltip:AddLine(" ")
 			tooltip:AddLine(Colors.WHITE .. "[BrokerAnything]")
@@ -200,8 +204,10 @@ local options = {
 
 					for id, _ in pairs(module.db.profile.ids) do
 						local info = GetCurrencyInfo(id)
-						local link = GetCurrencyLink(id, info.quantity)
-						values[id] = ElioteUtils.getTexture(info.iconFileID) .. link .. " |cFFAAAAAA(id:" .. id .. ")|r"
+						if info then
+							local link = GetCurrencyLink(id, info.quantity) or info.name or ""
+							values[id] = ElioteUtils.getTexture(info.iconFileID) .. link .. " |cFFAAAAAA(id:" .. id .. ")|r"
+						end
 					end
 
 					return values

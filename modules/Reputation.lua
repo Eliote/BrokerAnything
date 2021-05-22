@@ -9,6 +9,8 @@ local ElioteUtils = LibStub("LibElioteUtils-1.0")
 
 local SEX = UnitSex("player")
 
+local GetFriendshipReputation = GetFriendshipReputation or nop
+
 local brokers = {}
 module.brokers = brokers
 module.brokerTitle = L["Reputation"]

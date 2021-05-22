@@ -8,7 +8,7 @@ local startsWith = ElioteUtils.startsWith
 local getTexture = ElioteUtils.getTexture
 
 local GetCurrencyInfo = C_CurrencyInfo.GetCurrencyInfo
-local GetCurrencyLink = C_CurrencyInfo.GetCurrencyLink
+local GetCurrencyLink = C_CurrencyInfo.GetCurrencyLink or nop
 
 function Predictor:Initialize()
 	self.Initialize = nil

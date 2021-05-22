@@ -1,0 +1,27 @@
+## Interface: 20501
+## Title: BrokerAnything
+## Notes: Create a data broker for any ID
+## Author: Eliote
+## Version: @project-version@
+## SavedVariables: BrokerAnythingDB
+## OptionalDeps: TitanClassic
+
+Libs\embeds.xml
+Font\Fonts.xml
+
+Locales.lua
+
+widgets\CurrencyWidget.lua
+widgets\EventWidget.lua
+widgets\ItemWidget.lua
+widgets\LuaEditor.lua
+widgets\ReputationWidget.lua
+
+BrokerAnything.lua
+
+modules\Broker.lua
+modules\Currency.lua
+modules\Custom\module.xml
+modules\Item.lua
+modules\Reputation.lua
+modules\Titan.lua
