@@ -207,6 +207,8 @@ local options = {
 						if info then
 							local link = GetCurrencyLink(id, info.quantity) or info.name or ""
 							values[id] = ElioteUtils.getTexture(info.iconFileID) .. link .. " |cFFAAAAAA(id:" .. id .. ")|r"
+						else
+							values[id] = "|cFFAAAAAA(id:" .. id .. ")"
 						end
 					end
 
@@ -249,7 +251,9 @@ end
 --- this will NOT remove the broker from the database
 function module:RemoveBroker(name)
 	module:RemoveOption(name)
-	brokers[name].broker.value = nil
-	brokers[name].broker.text = L["Reload UI!"]
-	brokers[name] = nil
+	if brokers[name] and brokers[name].broker then
+		brokers[name].broker.value = nil
+		brokers[name].broker.text = L["Reload UI!"]
+		brokers[name] = nil
+	end
 end
