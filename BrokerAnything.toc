@@ -1,10 +1,14 @@
-## Interface: 90005
+## Interface: 90100
+## Interface-Retail: 90100
+## Interface-BCC: 20501
 ## Title: BrokerAnything
 ## Notes: Create a data broker for any ID
 ## Author: Eliote
 ## Version: @project-version@
 ## SavedVariables: BrokerAnythingDB
 ## OptionalDeps: Titan
+
+## X-Curse-Project-ID: 332601
 
 Libs\embeds.xml
 Font\Fonts.xml
