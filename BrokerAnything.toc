@@ -7,7 +7,7 @@
 ## Author: Eliote
 ## Version: @project-version@
 ## SavedVariables: BrokerAnythingDB
-## OptionalDeps: Titan
+## OptionalDeps: Titan, TitanClassic
 
 ## X-Curse-Project-ID: 332601
 ## X-Wago-ID: vEGPJ361
