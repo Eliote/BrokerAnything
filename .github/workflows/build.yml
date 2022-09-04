@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone project
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
       - name: Luacheck
         uses: nebularg/actions-luacheck@86af42dcf465915896671903fcdec3e01a492e87
