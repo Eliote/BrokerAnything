@@ -10,7 +10,7 @@
 ## OptionalDeps: Titan
 
 ## X-Curse-Project-ID: 332601
-## X-Curse-Project-ID: vEGPJ361
+## X-Wago-ID: vEGPJ361
 
 Libs\embeds.xml
 Font\Fonts.xml
