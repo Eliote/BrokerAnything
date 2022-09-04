@@ -1,6 +1,7 @@
-## Interface: 90100
-## Interface-Retail: 90100
-## Interface-BCC: 20501
+## Interface: 90205
+## Interface-Classic: 11403
+## Interface-BCC: 20504
+## Interface-Wrath: 30400
 ## Title: BrokerAnything
 ## Notes: Create a data broker for any ID
 ## Author: Eliote
@@ -9,6 +10,7 @@
 ## OptionalDeps: Titan
 
 ## X-Curse-Project-ID: 332601
+## X-Curse-Project-ID: vEGPJ361
 
 Libs\embeds.xml
 Font\Fonts.xml
