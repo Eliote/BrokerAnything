@@ -1,5 +1,7 @@
 local ADDON_NAME, _ = ...
 
+if (not C_CurrencyInfo) or (not C_CurrencyInfo.GetCurrencyInfo) then return
+
 local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 ---@type BrokerAnything
 local BrokerAnything = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
