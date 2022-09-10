@@ -157,14 +157,14 @@ do
 
 	--- Flags the editbox to be reformatted when its contents change.
 	local function OnTextChanged(self, ...)
-		if (self.faiap_OnTextChanged) then
-			self:faiap_OnTextChanged(...)
-		end
 		if (enabled[self]) then
 			codeCache[self] = nil
 			local updater = updaters[self]
 			updater:Stop()
 			updater:Play()
+		end
+		if (self.faiap_OnTextChanged) then
+			return self:faiap_OnTextChanged(...)
 		end
 	end
 
@@ -687,7 +687,7 @@ local indents = {
 }
 
 -- since Shadowlands '|r' now just pop the last color change instead of resetting it
-local TERMINATOR = "|r|r|r|r"
+local TERMINATOR = "|r|r|r|r|r|r|r|r"
 local buffer = {}
 
 --- Syntax highlights and indents a string of Lua code.
