@@ -686,8 +686,6 @@ local indents = {
 	["else"] = indentBoth
 }
 
--- since Shadowlands '|r' now just pop the last color change instead of resetting it
-local TERMINATOR = "|r|r|r|r|r|r|r|r"
 local buffer = {}
 
 --- Syntax highlights and indents a string of Lua code.
@@ -720,7 +718,7 @@ function lib.formatCode(code, tabWidth, colorTable, cursorOld)
 			if (colorTable) then
 				-- Add coloring
 				local color = colorTable[keywords[token] and TK_KEYWORD or token] or colorTable[tokenType]
-				colorCode = (colorLast and not color and TERMINATOR) or (color ~= colorLast and color)
+				colorCode = (colorLast and not color and "|r") or (color ~= colorLast and color and ("|r" .. color))
 				if (colorCode) then
 					buffer[#buffer + 1], bufferLen = colorCode, bufferLen + #colorCode
 				end
