@@ -13,13 +13,50 @@ do
 		__index = LMetatable.__index,
 		__newindex = LMetatable.__newindex,
 		__call = function(self, locale, tab)
-			return (self[locale]:gsub('($%b{})', function(w) return tab[w:sub(3, -2)] or w end))
+			return (self[locale]:gsub('($%b{})', function(w)
+				return tab[w:sub(3, -2)] or w
+			end))
 		end
 	}
 	setmetatable(_L, newMetatable)
 end
 
 if L then
+	--@debug@
+	L["DOC_CUSTOM_INITIALIZATION"] = [[This script runs at the initialization of the broker.
+It will be called as:
+
+|cFF42A5F5OnInitialization|r(|cFF4CAF50broker|r)
+
+- [|cFF4CAF50broker|r] Is the LibDataBroker table.]]
+
+	L["DOC_CUSTOM_ON_EVENT"] = [[This script will be called by every event registered by this broker (Configuration > Events).
+It will be called as:
+
+|cFF42A5F5OnEvent|r(|cFF4CAF50broker|r, |cFF4CAF50event |r[, |cFF4CAF50...|r])
+
+- [|cFF4CAF50broker|r] Is the LibDataBroker table.
+- [|cFF4CAF50event|r] Is the Event that triggered it.
+- [|cFF4CAF50...|r] Are the arguments the event supplies.]]
+
+	L["DOC_CUSTOM_TOOLTIP"] = [[This script is called when the mouse is over the broker.
+It will be called as:
+
+|cFF42A5F5OnTooltip|r(|cFF4CAF50tooltip|r, |cFF4CAF50broker|r)
+
+- [|cFF4CAF50tooltip|r] Is the wow Tooltip.
+- [|cFF4CAF50broker|r] Is the LibDataBroker table.]]
+
+	L["DOC_CUSTOM_ON_CLICK"] = [[This script is called when the broker is clicked.
+It will be called as:
+
+|cFF42A5F5OnClick|r(|cFF4CAF50frame|r, |cFF4CAF50button|r, |cFF4CAF50broker|r)
+
+- [|cFF4CAF50frame|r] Is the frame clicked.
+- [|cFF4CAF50button|r] Is the mouse button used to click this frame.
+- [|cFF4CAF50broker|r] Is the LibDataBroker table.]]
+
+	--@end-debug@
 	--@localization(locale="enUS", format="lua_additive_table", same-key-is-true=true)@
 
 	if GetLocale() == "enUS" or GetLocale() == "enGB" then
@@ -61,36 +98,39 @@ if L then
 	L["Events"] = "Eventos"
 	L["Interval (seconds)"] = "Intervalo (segundos)"
 	L["Initialization"] = "Inicialização"
-	L[
-	[[Type your lua script here!
-This script runs at the initialization of the broker. It will be called as function(broker) where:
-[broker] is the LibDataBroker table]]
-	] = [[Escreva seu código lua aqui!
-Esse script é executado na inicialização do broker. Ele será chamado como function(broker) aonde:
-[broker] é a tabela LibDataBroker]]
-	L[
-	[[Type your lua script here!
-This script runs on every event. It will be called as function(broker, event [, ...]) where:
-[broker] is the LibDataBroker table
-[event] is the Event that triggered it
-[...] the arguments the event supplies]]
-	] = [[Escreva seu código lua aqui!
-Esse script é executado em todos eventos. Ele será chamado como function(broker, event [, ...]) aonde:
-[broker] é a tabela LibDataBroker
-[event] é o evento que o disparou
-[...] são os argumentos fornecidos pelo evento]]
-	L[
-	[[Type your lua script here!
-This script is called when the mouse is over the broker. It will be called as function(tooltip) where:
-[tooltip] is the wow Tooltip]]
-	] = [[Escreva seu código lua aqui!
-Esse script é executado quando o mouse está sobre o broker. Ele será chamado como function(tooltip) aonde:
-[tooltip] é o Tooltip do wow]]
-	L[
-	[[Type your lua script here!
-This script is called when the broker is clicked.]]
-	] = [[Escreva seu código lua aqui!
-Este script é executado quando o broker é clicado.]]
+
+	L["DOC_CUSTOM_INITIALIZATION"] = [[Esse script é executado na inicialização do broker.
+Ele será chamado como:
+
+|cFF42A5F5OnInitialization|r(|cFF4CAF50broker|r)
+
+- [|cFF4CAF50broker|r] É a tabela LibDataBroker.]]
+
+	L["DOC_CUSTOM_ON_EVENT"] = [[Esse script é chamado por todos eventos registrados neste broker (Configurações > Eventos).
+Ele será chamado como:
+
+|cFF42A5F5OnEvent|r(|cFF4CAF50broker|r, |cFF4CAF50event |r[, |cFF4CAF50...|r])
+
+- [|cFF4CAF50broker|r] É a tabela LibDataBroker.
+- [|cFF4CAF50event|r] É o evento que o disparou.
+- [|cFF4CAF50...|r] São os argumentos fornecidos pelo evento.]]
+
+	L["DOC_CUSTOM_TOOLTIP"] = [[Esse script é executado quando o mouse está sobre o broker.
+Ele será chamado como:
+
+|cFF42A5F5OnTooltip|r(|cFF4CAF50tooltip|r, |cFF4CAF50broker|r)
+
+- [|cFF4CAF50tooltip|r] É o Tooltip do wow.
+- [|cFF4CAF50broker|r] É a tabela LibDataBroker.]]
+
+	L["DOC_CUSTOM_ON_CLICK"] = [[Este script é executado quando o broker é clicado.
+Ele será chamado como:
+
+|cFF42A5F5OnClick|r(|cFF4CAF50frame|r, |cFF4CAF50button|r, |cFF4CAF50broker|r)
+
+- [|cFF4CAF50frame|r] É o frame clicado.
+- [|cFF4CAF50button|r] É o botão do mouse utilizado para clicar neste frame.
+- [|cFF4CAF50broker|r] É a tabela LibDataBroker.]]
 
 	L['Are you sure you want to remove "${name}"?\nAll of its configurations will be lost!'] = 'Tem certeza de que deseja remover "${name}"?\nTodas as suas configurações serão perdidas!'
 	L["Rename"] = "Renomear"

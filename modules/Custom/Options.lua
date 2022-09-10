@@ -231,11 +231,7 @@ function module:AddToOptions(name)
 					onInit = {
 						type = 'input',
 						name = L["Script"],
-						desc = L[
-						[[Type your lua script here!
-This script runs at the initialization of the broker. It will be called as function(broker) where:
-[broker] is the LibDataBroker table]]
-						],
+						desc = L["DOC_CUSTOM_INITIALIZATION"],
 						width = 'full',
 						multiline = 18,
 						set = function(info, value)
@@ -258,13 +254,7 @@ This script runs at the initialization of the broker. It will be called as funct
 					onEvent = {
 						type = 'input',
 						name = L["Script"],
-						desc = L[
-						[[Type your lua script here!
-This script runs on every event. It will be called as function(broker, event [, ...]) where:
-[broker] is the LibDataBroker table
-[event] is the Event that triggered it
-[...] the arguments the event supplies]]
-						],
+						desc = L["DOC_CUSTOM_ON_EVENT"],
 						width = 'full',
 						multiline = 18,
 						set = function(info, value) module:GetBrokerInfo(name).script = value end,
@@ -284,11 +274,7 @@ This script runs on every event. It will be called as function(broker, event [, 
 					onEvent = {
 						type = 'input',
 						name = L["Script"],
-						desc = L[
-						[[Type your lua script here!
-This script is called when the mouse is over the broker. It will be called as function(tooltip) where:
-[tooltip] is the wow Tooltip]]
-						],
+						desc = L["DOC_CUSTOM_TOOLTIP"],
 						width = 'full',
 						multiline = 18,
 						set = function(info, value) module:GetBrokerInfo(name).tooltipScript = value end,
@@ -308,10 +294,7 @@ This script is called when the mouse is over the broker. It will be called as fu
 					onEvent = {
 						type = 'input',
 						name = L["Script"],
-						desc = L[
-						[[Type your lua script here!
-This script is called when the broker is clicked.]]
-						],
+						desc = L["DOC_CUSTOM_ON_CLICK"],
 						width = 'full',
 						set = function(info, value) module:GetBrokerInfo(name).clickScript = value end,
 						get = function(info) return module:GetBrokerInfo(name).clickScript end,
