@@ -1,4 +1,4 @@
-local Type, Version = "LuaEditBox", 4
+local Type, Version = "LuaEditBox", 5
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -44,7 +44,7 @@ local function UpdateLineNumbers(self)
 	sizeTestFontString:SetText(tostring(lineCount))
 	local newWidth = sizeTestFontString:GetStringWidth() + 12
 	lineScrollFrame:SetPoint("BOTTOMRIGHT", self.button, "TOPLEFT", newWidth, 4)
-	lineEditBox:SetWidth(lineScrollFrame:GetWidth() - 3)
+	lineEditBox:SetWidth(lineScrollFrame:GetWidth())
 
 	sizeTestFontString:SetText("")
 	local lineHeight = floor(sizeTestFontString:GetLineHeight())
@@ -240,6 +240,7 @@ Methods
 -------------------------------------------------------------------------------]]
 local methods = {
 	["OnAcquire"] = function(self)
+		IndentationLib.enable(self.editBox)
 		self.editBox:SetText("")
 		self.sizeTestFontString:SetText("")
 		self.lineEditBox:SetText("")
@@ -252,6 +253,7 @@ local methods = {
 	end,
 
 	["OnRelease"] = function(self)
+		IndentationLib.disable(self.editBox)
 		self:ClearFocus()
 	end,
 

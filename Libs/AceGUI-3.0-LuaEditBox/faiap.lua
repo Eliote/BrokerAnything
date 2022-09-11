@@ -31,7 +31,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -- @see lib.Tokens
 
 -- I'm making it a real lib with LibStub
-local MAJOR, MINOR = "ForAllIndentsAndPurposes-Eliote-1.0", 2
+local MAJOR, MINOR = "ForAllIndentsAndPurposes-Eliote-1.0", 3
 ---@class ForAllIndentsAndPurposes
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 
@@ -142,7 +142,7 @@ do
 
 	function lib.decode(code)
 		if code then
-			--code = lib.stripColors(code)
+			code = lib.stripColors(code)
 			code = stringgsub(code, "||", "|")
 		end
 		return code or ""
@@ -718,7 +718,7 @@ function lib.formatCode(code, tabWidth, colorTable, cursorOld)
 			if (colorTable) then
 				-- Add coloring
 				local color = colorTable[keywords[token] and TK_KEYWORD or token] or colorTable[tokenType]
-				colorCode = (colorLast and not color and "|r") or (color ~= colorLast and color and ("|r" .. color))
+				colorCode = (colorLast and not color and "|r") or (color ~= colorLast and color and ((colorLast and "|r" or "") .. color))
 				if (colorCode) then
 					buffer[#buffer + 1], bufferLen = colorCode, bufferLen + #colorCode
 				end
