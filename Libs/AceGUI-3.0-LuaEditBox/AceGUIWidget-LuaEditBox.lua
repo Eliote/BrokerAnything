@@ -1,6 +1,8 @@
-local Type, Version = "LuaEditBox", 5
+local Type, Version = "LuaEditBox", 6
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
-if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
+if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then
+	return
+end
 
 ---@type ForAllIndentsAndPurposes
 local IndentationLib = LibStub("ForAllIndentsAndPurposes-Eliote-1.0")
@@ -92,7 +94,7 @@ end
 --[[-----------------------------------------------------------------------------
 Scripts
 -------------------------------------------------------------------------------]]
-local function OnClick(self)
+local function OnClickAccept(self)
 	-- Button
 	self = self.obj
 	self.editBox:ClearFocus()
@@ -198,9 +200,16 @@ end
 local function OnTextChanged(self, userInput, ...)
 	local widget = self.obj
 
+	local text = widget.editBox:GetText()
 	if userInput then
-		widget:Fire("OnTextChanged", widget.editBox:GetText())
+		widget:Fire("OnTextChanged", text)
 		widget.button:Enable()
+		widget.textHistory:Add(text, widget.editBox:GetCursorPosition(), false, true)
+		widget.isInHistory = false
+	else
+		if widget.textHistory.time == 0 then
+			widget.textHistory:Add(text, 0, true)
+		end
 	end
 	if (widget.highlightNum) then
 		widget.highlightNum = nil
@@ -210,9 +219,12 @@ end
 
 local function OnTextSet(self)
 	-- EditBox
-	self:HighlightText(0, 0)
-	self:SetCursorPosition(self:GetNumLetters())
-	self:SetCursorPosition(0)
+	if (self.initializing) then
+		self:HighlightText(0, 0)
+		self:SetCursorPosition(self:GetNumLetters())
+		self:SetCursorPosition(0)
+		self.initializing = false
+	end
 end
 
 local function OnVerticalScroll(self, offset)
@@ -235,12 +247,105 @@ end
 local function LineEditBoxOnEditFocusGained(self)
 	self:ClearFocus()
 end
+
+local function OnTabPressed(self)
+	self:Insert("    ")
+	return true
+end
+
+local function OnKeyDown(self, key)
+	self = self.obj
+	if IsControlKeyDown() then
+		if key == "Z" then
+			local history
+			if (IsShiftKeyDown()) then
+				history = self.textHistory:Redo()
+			else
+				if not self.isInHistory then
+					--print("add current!")
+					self.textHistory:Add(self.editBox:GetText(), self.editBox:GetCursorPosition(), true, false)
+				end
+				self.isInHistory = true
+				history = self.textHistory:Undo()
+			end
+			if (history) then
+				self.editBox:SetText(history.text)
+				local cursor = history.cursor
+				print("teste")
+				self.editBox:SetCursorPosition(cursor)
+				self.editBox.faiap_forceCursorPosition = cursor
+			end
+		elseif key == "S" then
+			OnClickAccept(self)
+		end
+	elseif self.onKeyDownLastKey ~= key and (key == "ENTER" or key == "SPACE" or key == "TAB") then
+		--print("add! " .. self.editBox:GetCursorPosition())
+		self.textHistory:Add(self.editBox:GetText(), self.editBox:GetCursorPosition(), true, true)
+	end
+	self.onKeyDownLastKey = key
+end
+
+local function HistoryRedo(self)
+	local history = table.remove(self.redoHistory)
+	if not history then
+		return
+	end
+	table.insert(self.undoHistory, history)
+	--print("redo: ".. #self.undoHistory .. " - " .. #self.redoHistory)
+	return self.undoHistory[#self.undoHistory]
+end
+
+local function HistoryUndo(self)
+	if #self.undoHistory <= 1 then
+		return
+	end
+	local history = table.remove(self.undoHistory)
+	if not history then
+		return
+	end
+	table.insert(self.redoHistory, history)
+	--print("undo: " .. #self.undoHistory .. " - " .. #self.redoHistory)
+	return self.undoHistory[#self.undoHistory]
+end
+
+local function HistoryAdd(self, text, cursor, force, shouldWipe)
+	local time = time()
+	if not force and (time - self.time <= 5) then
+		--print("ignore")
+		return
+	end
+	local last = self.undoHistory[#self.undoHistory]
+	-- ignore repeated value
+	if last and last.text == text and last.cursor == cursor then
+		return
+	end
+	-- limits the history
+	if (#self.undoHistory > 30) then
+		table.remove(self.undoHistory, 1)
+	end
+	if shouldWipe then
+		--print("wipe")
+		wipe(self.redoHistory)
+	end
+	table.insert(self.undoHistory, { text = text, cursor = cursor })
+	self.time = time
+end
+
+local function HistoryTable()
+	return {
+		undoHistory = {},
+		redoHistory = {},
+		time = 0,
+		Undo = HistoryUndo,
+		Redo = HistoryRedo,
+		Add = HistoryAdd,
+	}
+end
 --[[-----------------------------------------------------------------------------
 Methods
 -------------------------------------------------------------------------------]]
 local methods = {
 	["OnAcquire"] = function(self)
-		IndentationLib.enable(self.editBox)
 		self.editBox:SetText("")
 		self.sizeTestFontString:SetText("")
 		self.lineEditBox:SetText("")
@@ -250,10 +355,17 @@ local methods = {
 		self.entered = nil
 		self:SetMaxLetters(0)
 		self.button:Disable()
+		self.textHistory = HistoryTable()
+		self.initializing = true
+		self.editBox.faiap_forceCursorPosition = nil
+
+		IndentationLib.enable(self.editBox)
 	end,
 
 	["OnRelease"] = function(self)
 		IndentationLib.disable(self.editBox)
+		self.textHistory = nil
+		self.onKeyDownLastKey = nil
 		self:ClearFocus()
 	end,
 
@@ -331,6 +443,7 @@ local methods = {
 	end,
 
 	["SetCursorPosition"] = function(self, ...)
+		print("here 4")
 		return self.editBox:SetCursorPosition(...)
 	end,
 
@@ -364,15 +477,15 @@ local function Constructor()
 	label:SetText(ACCEPT)
 	label:SetHeight(10)
 
-	local button = CreateFrame("Button", ("%s%dButton"):format(Type, widgetNum), frame, "UIPanelButtonTemplate")
+	local button = CreateFrame("Button", ("%s%dAcceptButton"):format(Type, widgetNum), frame, "UIPanelButtonTemplate")
 	button:SetPoint("BOTTOMLEFT", 0, 4)
 	button:SetHeight(22)
 	button:SetWidth(label:GetStringWidth() + 24)
 	button:SetText(ACCEPT)
-	button:SetScript("OnClick", OnClick)
+	button:SetScript("OnClick", OnClickAccept)
 	button:Disable()
 
-	local runButton = CreateFrame("Button", ("%s%dButton"):format(Type, widgetNum), frame, "UIPanelButtonTemplate")
+	local runButton = CreateFrame("Button", ("%s%dRunButton"):format(Type, widgetNum), frame, "UIPanelButtonTemplate")
 	runButton:SetPoint("TOPLEFT", button, "TOPRIGHT", 4, 0)
 	runButton:SetHeight(22)
 	runButton:SetWidth(label:GetStringWidth() + 24)
@@ -450,6 +563,8 @@ local function Constructor()
 	editBox:SetScript("OnTextChanged", OnTextChanged)
 	editBox:SetScript("OnTextSet", OnTextSet)
 	editBox:SetScript("OnEditFocusGained", OnEditFocusGained)
+	editBox:SetScript("OnKeyDown", OnKeyDown)
+	editBox:SetScript("OnTabPressed", OnTabPressed)
 
 	local sizeTestFontString = editBox:CreateFontString()
 	sizeTestFontString:ClearAllPoints()
@@ -460,8 +575,6 @@ local function Constructor()
 	sizeTestFontString:SetNonSpaceWrap(true)
 	sizeTestFontString:SetWordWrap(true)
 	sizeTestFontString:Hide()
-
-	IndentationLib.enable(editBox)
 
 	scrollFrame:SetScrollChild(editBox)
 

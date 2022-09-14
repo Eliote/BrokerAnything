@@ -31,7 +31,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -- @see lib.Tokens
 
 -- I'm making it a real lib with LibStub
-local MAJOR, MINOR = "ForAllIndentsAndPurposes-Eliote-1.0", 3
+local MAJOR, MINOR = "ForAllIndentsAndPurposes-Eliote-1.0", 5
 ---@class ForAllIndentsAndPurposes
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 
@@ -69,6 +69,21 @@ do
 		text, cursor = lib.stripCode("(|*)(|[Cc]%x%x%x%x%x%x%x%x)()", text, cursor)
 		return lib.stripCode("(|*)(|[Rr])()", text, cursor)
 	end
+
+	function lib.decode(code)
+		if code then
+			code = lib.stripColors(code)
+			code = stringgsub(code, "||", "|")
+		end
+		return code or ""
+	end
+
+	function lib.encode(code)
+		if code then
+			code = stringgsub(code, "|", "||")
+		end
+		return code or ""
+	end
 end
 
 do
@@ -91,6 +106,11 @@ do
 		if (coloredCache[editBox] == colored) then return end
 
 		local code, cursor = lib.stripColors(colored, GetCursorPositionBackup(editBox))
+		local c2, subs = stringgsub(strsub(code, 0, cursor), "||", "|")
+		if cursor then
+			cursor = cursor - subs
+		end
+		code = c2 .. stringgsub(strsub(code, cursor + 1), "||", "|")
 
 		-- Count lines in text
 		local numLines, indexLast = 0, 0
@@ -103,6 +123,14 @@ do
 			forceIndent = true -- Reindent if line count changes
 		end
 		numLinesCache[editBox] = numLines
+
+		-- Since this function runs after some delay, the cursor position gets messed up.
+		-- I hope to one day find out why.
+		-- But, for now, here is a HACK!
+		if (editBox.faiap_forceCursorPosition) then
+			cursor = editBox.faiap_forceCursorPosition
+			editBox.faiap_forceCursorPosition = nil
+		end
 
 		local coloredNew, cursorNew = lib.formatCode(
 				code,
@@ -140,21 +168,6 @@ do
 		return true
 	end
 
-	function lib.decode(code)
-		if code then
-			code = lib.stripColors(code)
-			code = stringgsub(code, "||", "|")
-		end
-		return code or ""
-	end
-
-	function lib.encode(code)
-		if code then
-			code = stringgsub(code, "|", "||")
-		end
-		return code or ""
-	end
-
 	--- Flags the editbox to be reformatted when its contents change.
 	local function OnTextChanged(self, ...)
 		if (enabled[self]) then
@@ -170,14 +183,15 @@ do
 
 	--- Forces a re-indent for this editbox on tab.
 	local function OnTabPressed(self, ...)
+		local changed
 		if (self.faiap_OnTabPressed) then
-			self:faiap_OnTabPressed(...)
+			changed = self:faiap_OnTabPressed(...)
 		end
-		return lib.update(self, true)
+		return lib.update(self, false) or changed
 	end
 
 	---@return string Cached plain text contents.
-	local function GetCodeCached (self)
+	local function GetCodeCached(self)
 		local code = codeCache[self]
 		if (not code) then
 			code = lib.stripColors((GetTextBackup(self)))
@@ -219,6 +233,7 @@ do
 	--- Sets the cursor position relative to un-colored text.
 	local function SetCursorPosition(self, cursor, ...)
 		local _, newCursor = lib.formatCode(GetText(self), nil, self.faiap_colorTable, cursor)
+		--print("set: " .. cursor)
 		return SetCursorPositionBackup(self, newCursor, ...)
 	end
 
