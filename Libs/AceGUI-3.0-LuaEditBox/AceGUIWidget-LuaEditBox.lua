@@ -1,4 +1,4 @@
-local Type, Version = "LuaEditBox", 6
+local Type, Version = "LuaEditBox", 7
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then
 	return
@@ -103,25 +103,41 @@ local function OnClickAccept(self)
 	end
 end
 
+local function errorhandler()
+	return function(...)
+		geterrorhandler()(...)
+		return ...
+	end
+end
+
 local function OnRunClick(self)
 	local widget = self.obj
 	widget.editBox:ClearFocus()
 
-	local fun, err = loadstring(widget:GetText())
-	if (not fun) then
-		local _, lineNum = err:match("(%b[]):(%d+):")
-		widget.highlightNum = tonumber(lineNum)
+	local function onError(err)
 		if (widget.OnRunScriptError and type(widget.OnRunScriptError) == "function") then
 			widget:OnRunScriptError(err)
 		end
+		local _, lineNum, msg = err:match("(%b[]):(%d+):(.*)")
+		widget.highlightNum = tonumber(lineNum)
+		widget.lastError = lineNum .. ": " .. (msg or "")
 		UpdateLineNumbers(self)
 		return
 	end
 
+	local fun, err = loadstring(widget:GetText())
+	if (not fun) then
+		return onError(err)
+	end
+
+	local status
 	if (widget.userdata and widget.userdata.option and widget.userdata.option.func) then
-		fun(widget.userdata.option.func())
+		status, err = xpcall(fun, errorhandler(), widget.userdata.option.func())
 	else
-		fun()
+		status, err = xpcall(fun, errorhandler())
+	end
+	if not status then
+		return onError(err)
 	end
 end
 
@@ -206,14 +222,15 @@ local function OnTextChanged(self, userInput, ...)
 		widget.button:Enable()
 		widget.textHistory:Add(text, widget.editBox:GetCursorPosition(), false, true)
 		widget.isInHistory = false
+		if (widget.highlightNum) then
+			widget.highlightNum = nil
+			widget.lastError = nil
+			UpdateLineNumbers(self)
+		end
 	else
 		if widget.textHistory.time == 0 then
 			widget.textHistory:Add(text, 0, true)
 		end
-	end
-	if (widget.highlightNum) then
-		widget.highlightNum = nil
-		UpdateLineNumbers(self)
 	end
 end
 
@@ -246,6 +263,18 @@ end
 
 local function LineEditBoxOnEditFocusGained(self)
 	self:ClearFocus()
+end
+
+local function OnEnterLineBox(self, motion)
+	if (self.obj.lastError) then
+		GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
+		GameTooltip:SetText(self.obj.lastError)
+		GameTooltip:Show()
+	end
+end
+
+local function OnLeaveLineBox(self, motion)
+	GameTooltip:Hide()
 end
 
 local function OnTabPressed(self)
@@ -358,6 +387,8 @@ local methods = {
 		self.textHistory = HistoryTable()
 		self.initializing = true
 		self.editBox.faiap_forceCursorPosition = nil
+		self.highlightNum = nil
+		self.lastError = nil
 
 		IndentationLib.enable(self.editBox)
 	end,
@@ -517,6 +548,8 @@ local function Constructor()
 	lineEditBox:SetTextColor(0.6, 0.6, 0.6)
 	lineEditBox:SetCountInvisibleLetters(false)
 	lineEditBox:SetScript("OnEditFocusGained", LineEditBoxOnEditFocusGained)
+	lineEditBox:SetScript("OnEnter", OnEnterLineBox)
+	lineEditBox:SetScript("OnLeave", OnLeaveLineBox)
 	lineEditBox:SetJustifyH("RIGHT")
 
 	lineScrollFrame:SetScrollChild(lineEditBox)
