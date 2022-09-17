@@ -27,7 +27,16 @@ Support functions
 
 -- self is the widget
 local function Layout(self)
-	self:SetHeight(200) -- widget:SetHeight sets the widget.frame height
+	local height = 300
+	local parent = self.frame:GetParent()
+	if parent then
+		height = parent.GetHeight and parent:GetHeight()
+		parent = parent:GetParent()
+		if parent then
+			height = parent.GetHeight and parent:GetHeight()
+		end
+	end
+	self:SetHeight(height - 14)
 end
 
 local function UpdateLineNumbers(self)
@@ -55,6 +64,7 @@ local function UpdateLineNumbers(self)
 	local charCount = 0
 	local count = 1
 	local caretLineFound = false
+	local highlightLineFound = false
 	for line in text:gmatch("([^\n]*\n?)") do
 		if #line > 0 then
 			local oldCount = charCount
@@ -63,6 +73,7 @@ local function UpdateLineNumbers(self)
 			caretLineFound = caretLineFound or caretLine
 
 			if count == self.highlightNum then
+				highlightLineFound = true
 				lineText = lineText .. "|cFFFF1111" .. count .. "|r" .. "\n"
 			elseif caretLine then
 				lineText = lineText .. "|cFFFFFFFF" .. count .. "|r" .. "\n"
@@ -81,7 +92,9 @@ local function UpdateLineNumbers(self)
 	end
 
 	if text:sub(-1, -1) == "\n" then
-		if (caretLineFound) then
+		if self.highlightNum and not highlightLineFound then
+			lineText = lineText .. "|cFFFF1111" .. count .. "|r" .. "\n"
+		elseif (caretLineFound) then
 			lineText = lineText .. count .. "\n"
 		else
 			lineText = lineText .. "|cFFFFFFFF" .. count .. "|r" .. "\n"
@@ -97,7 +110,7 @@ Scripts
 local function OnClickAccept(self)
 	-- Button
 	self = self.obj
-	self.editBox:ClearFocus()
+	--self.editBox:ClearFocus()
 	if not self:Fire("OnEnterPressed", self.editBox:GetText()) then
 		self.button:Disable()
 	end
@@ -112,12 +125,13 @@ end
 
 local function OnRunClick(self)
 	local widget = self.obj
-	widget.editBox:ClearFocus()
+	--widget.editBox:ClearFocus()
 
 	local function onError(err)
 		if (widget.OnRunScriptError and type(widget.OnRunScriptError) == "function") then
 			widget:OnRunScriptError(err)
 		end
+		print(err)
 		local _, lineNum, msg = err:match("(%b[]):(%d+):(.*)")
 		widget.highlightNum = tonumber(lineNum)
 		widget.lastError = lineNum .. ": " .. (msg or "")
@@ -277,6 +291,26 @@ local function OnLeaveLineBox(self, motion)
 	GameTooltip:Hide()
 end
 
+local function OnEnterAcceptButton(self, motion)
+	GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
+	GameTooltip:SetText("CTRL+S")
+	GameTooltip:Show()
+end
+
+local function OnLeaveAcceptButton(self, motion)
+	GameTooltip:Hide()
+end
+
+local function OnEnterRunButton(self, motion)
+	GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
+	GameTooltip:SetText("CTRL+R")
+	GameTooltip:Show()
+end
+
+local function OnLeaveRunButton(self, motion)
+	GameTooltip:Hide()
+end
+
 local function OnTabPressed(self)
 	self:Insert("    ")
 	return true
@@ -303,7 +337,9 @@ local function OnKeyDown(self, key)
 				self.editBox:SetCursorPosition(cursor)
 			end
 		elseif key == "S" then
-			OnClickAccept(self)
+			OnClickAccept(self.button)
+		elseif key == "R" then
+			OnRunClick(self.runButton)
 		end
 	elseif self.onKeyDownLastKey ~= key and (key == "ENTER" or key == "SPACE" or key == "TAB") then
 		--print("add! " .. self.editBox:GetCursorPosition())
@@ -386,6 +422,17 @@ local methods = {
 		self.initializing = true
 		self.highlightNum = nil
 		self.lastError = nil
+		self:SetFontObject(VeraMonoFont)
+
+		local timeElapsed = 0
+		self.frame:SetScript("OnUpdate", function(f, elapsed)
+			local widget = f.obj
+			timeElapsed = timeElapsed + elapsed
+			if timeElapsed > 0.016 and widget:IsVisible() and not widget:IsReleasing() then
+				timeElapsed = 0
+				Layout(self)
+			end
+		end)
 
 		IndentationLib.enable(self.editBox)
 	end,
@@ -395,6 +442,7 @@ local methods = {
 		self.textHistory = nil
 		self.onKeyDownLastKey = nil
 		self:ClearFocus()
+		self.frame:SetScript("OnUpdate", nil)
 	end,
 
 	["SetDisabled"] = function(self, disabled)
@@ -471,7 +519,6 @@ local methods = {
 	end,
 
 	["SetCursorPosition"] = function(self, ...)
-		print("here 4")
 		return self.editBox:SetCursorPosition(...)
 	end,
 
@@ -479,7 +526,7 @@ local methods = {
 		self.lineEditBox:SetFontObject(fontObject)
 		self.editBox:SetFontObject(fontObject)
 		self.sizeTestFontString:SetFontObject(fontObject)
-	end
+	end,
 }
 
 --[[-----------------------------------------------------------------------------
@@ -511,6 +558,8 @@ local function Constructor()
 	button:SetWidth(label:GetStringWidth() + 24)
 	button:SetText(ACCEPT)
 	button:SetScript("OnClick", OnClickAccept)
+	button:SetScript("OnEnter", OnEnterAcceptButton)
+	button:SetScript("OnLeave", OnLeaveAcceptButton)
 	button:Disable()
 
 	local runButton = CreateFrame("Button", ("%s%dRunButton"):format(Type, widgetNum), frame, "UIPanelButtonTemplate")
@@ -519,6 +568,8 @@ local function Constructor()
 	runButton:SetWidth(label:GetStringWidth() + 24)
 	runButton:SetText("Run")
 	runButton:SetScript("OnClick", OnRunClick)
+	runButton:SetScript("OnEnter", OnEnterRunButton)
+	runButton:SetScript("OnLeave", OnLeaveRunButton)
 	runButton:Enable()
 
 	local text = button:GetFontString()
@@ -621,7 +672,7 @@ local function Constructor()
 		type = Type,
 		lineScrollFrame = lineScrollFrame,
 		sizeTestFontString = sizeTestFontString,
-		lineEditBox = lineEditBox
+		lineEditBox = lineEditBox,
 	}
 	for method, func in pairs(methods) do
 		widget[method] = func

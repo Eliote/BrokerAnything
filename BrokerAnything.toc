@@ -20,7 +20,6 @@ Locales.lua
 widgets\CurrencyWidget.lua
 widgets\EventWidget.lua
 widgets\ItemWidget.lua
-widgets\LuaEditor.lua
 widgets\ReputationWidget.lua
 
 BrokerAnything.lua

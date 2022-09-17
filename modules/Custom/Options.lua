@@ -240,7 +240,7 @@ function module:AddToOptions(name)
 						end,
 						get = function(info) return module:GetBrokerInfo(name).initScript end,
 						func = function() return getBrokerOrNull() end,
-						dialogControl = "BrokerAnythingLuaEditBox",
+						dialogControl = "LuaEditBox",
 						order = 2
 					}
 				}
@@ -260,7 +260,7 @@ function module:AddToOptions(name)
 						set = function(info, value) module:GetBrokerInfo(name).script = value end,
 						get = function(info) return module:GetBrokerInfo(name).script end,
 						func = function() return getBrokerOrNull(), "TestEvent" end,
-						dialogControl = "BrokerAnythingLuaEditBox",
+						dialogControl = "LuaEditBox",
 						order = 1
 					},
 				}
@@ -279,7 +279,7 @@ function module:AddToOptions(name)
 						multiline = 18,
 						set = function(info, value) module:GetBrokerInfo(name).tooltipScript = value end,
 						get = function(info) return module:GetBrokerInfo(name).tooltipScript end,
-						dialogControl = "BrokerAnythingLuaEditBox",
+						dialogControl = "LuaEditBox",
 						func = function() return GameTooltip end,
 						order = 1
 					},
@@ -298,7 +298,7 @@ function module:AddToOptions(name)
 						width = 'full',
 						set = function(info, value) module:GetBrokerInfo(name).clickScript = value end,
 						get = function(info) return module:GetBrokerInfo(name).clickScript end,
-						dialogControl = "BrokerAnythingLuaEditBox",
+						dialogControl = "LuaEditBox",
 						order = 1,
 					},
 				}
