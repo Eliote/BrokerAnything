@@ -225,8 +225,8 @@ local function OnTextChanged(self, userInput, ...)
 		if (widget.highlightNum) then
 			widget.highlightNum = nil
 			widget.lastError = nil
-			UpdateLineNumbers(self)
 		end
+		UpdateLineNumbers(self)
 	else
 		if widget.textHistory.time == 0 then
 			widget.textHistory:Add(text, 0, true)
@@ -300,9 +300,7 @@ local function OnKeyDown(self, key)
 			if (history) then
 				self.editBox:SetText(history.text)
 				local cursor = history.cursor
-				print("teste")
 				self.editBox:SetCursorPosition(cursor)
-				self.editBox.faiap_forceCursorPosition = cursor
 			end
 		elseif key == "S" then
 			OnClickAccept(self)
@@ -386,7 +384,6 @@ local methods = {
 		self.button:Disable()
 		self.textHistory = HistoryTable()
 		self.initializing = true
-		self.editBox.faiap_forceCursorPosition = nil
 		self.highlightNum = nil
 		self.lastError = nil
 

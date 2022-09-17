@@ -35,7 +35,9 @@ local MAJOR, MINOR = "ForAllIndentsAndPurposes-Eliote-1.0", 5
 ---@class ForAllIndentsAndPurposes
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 
-if not lib then return end -- No upgrade needed
+if not lib then
+	return
+end -- No upgrade needed
 
 local UPDATE_INTERVAL = 0.2 -- Time to wait after last keypress before updating
 
@@ -78,11 +80,19 @@ do
 		return code or ""
 	end
 
-	function lib.encode(code)
-		if code then
+	function lib.encode(code, cursor)
+		if not code or code == "" then
+			return code, cursor
+		end
+		if cursor then
+			local codeBeforeCursor, subs = stringgsub(strsub(code, 1, cursor), "|", "||")
+			local codeAfterCursor = stringgsub(strsub(code, cursor + 1), "|", "||")
+			code = codeBeforeCursor .. codeAfterCursor
+			cursor = cursor + subs
+		else
 			code = stringgsub(code, "|", "||")
 		end
-		return code or ""
+		return code or "", cursor
 	end
 end
 
@@ -100,17 +110,16 @@ do
 	--   change.  If false, suppress indentation.  If nil, only indent when line count changes.
 	-- @return True if text was changed.
 	function lib.update(editBox, forceIndent)
-		if (not enabled[editBox]) then return end
+		if (not enabled[editBox]) then
+			return
+		end
 
 		local colored = GetTextBackup(editBox)
-		if (coloredCache[editBox] == colored) then return end
+		if (coloredCache[editBox] == colored) then
+			return
+		end
 
 		local code, cursor = lib.stripColors(colored, GetCursorPositionBackup(editBox))
-		local c2, subs = stringgsub(strsub(code, 0, cursor), "||", "|")
-		if cursor then
-			cursor = cursor - subs
-		end
-		code = c2 .. stringgsub(strsub(code, cursor + 1), "||", "|")
 
 		-- Count lines in text
 		local numLines, indexLast = 0, 0
@@ -123,14 +132,6 @@ do
 			forceIndent = true -- Reindent if line count changes
 		end
 		numLinesCache[editBox] = numLines
-
-		-- Since this function runs after some delay, the cursor position gets messed up.
-		-- I hope to one day find out why.
-		-- But, for now, here is a HACK!
-		if (editBox.faiap_forceCursorPosition) then
-			cursor = editBox.faiap_forceCursorPosition
-			editBox.faiap_forceCursorPosition = nil
-		end
 
 		local coloredNew, cursorNew = lib.formatCode(
 				code,
@@ -149,7 +150,9 @@ do
 
 	--- @return boolean True if successfully disabled for this editbox.
 	function lib.disable(editBox)
-		if (not enabled[editBox]) then return end
+		if (not enabled[editBox]) then
+			return
+		end
 		enabled[editBox] = false
 		editBox.GetText, editBox.SetText, editBox.Insert = nil
 		editBox.GetCursorPosition, editBox.SetCursorPosition, editBox.HighlightText = nil
@@ -215,7 +218,11 @@ do
 	-- edit box is hidden.
 	local function SetText(self, text)
 		codeCache[self] = nil
-		return SetTextBackup(self, lib.encode(text))
+		local code, cursor = lib.encode(text, GetCursorPositionBackup(self))
+		code, cursor = lib.formatCode(code, nil, self.faiap_colorTable, cursor)
+		local r = SetTextBackup(self, code)
+		SetCursorPositionBackup(self, cursor)
+		return r
 	end
 
 	local function Insert(self, text)
@@ -232,9 +239,10 @@ do
 
 	--- Sets the cursor position relative to un-colored text.
 	local function SetCursorPosition(self, cursor, ...)
-		local _, newCursor = lib.formatCode(GetText(self), nil, self.faiap_colorTable, cursor)
-		--print("set: " .. cursor)
-		return SetCursorPositionBackup(self, newCursor, ...)
+		local text = GetText(self)
+		text, cursor = lib.encode(text, cursor)
+		text, cursor = lib.formatCode(text, nil, self.faiap_colorTable, cursor)
+		return SetCursorPositionBackup(self, cursor, ...)
 	end
 
 	--- Highlights a substring relative to un-colored text.
@@ -708,7 +716,7 @@ local buffer = {}
 -- @see lib.Enable
 -- @return Formatted text, and an updated cursor position if requested.
 function lib.formatCode(code, tabWidth, colorTable, cursorOld)
-	if (not (tabWidth or colorTable)) then
+	if (code == "" or not (tabWidth or colorTable)) then
 		return code, cursorOld
 	end
 
