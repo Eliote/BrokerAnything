@@ -8,7 +8,7 @@ do
 	--[[-----------------------------------------------------------------------------
 		InteractiveLabel Widget
 	-------------------------------------------------------------------------------]]
-	local Type, Version = "AsyncSearchEditBox_Base", 3
+	local Type, Version = "AsyncSearchEditBox_Base", 4
 	local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 	if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -261,7 +261,9 @@ do
 		end
 		if activeButtons > 0 then
 			self.predictor:SetHeight(15 + activeButtons * 14)
-			self.predictor:Show()
+			if self.predictor.obj.editBox:HasFocus() then
+				self.predictor:Show()
+			end
 		else
 			self.predictor:Hide()
 		end

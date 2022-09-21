@@ -1,4 +1,4 @@
-local Completing = LibStub("AceGUI-3.0-Search-EditBox-Eliote")
+local Completing = LibStub("AceGUI-3.0-Async-Search-EditBox")
 local Predictor = {
 	currencyCache = {}
 }
@@ -23,28 +23,61 @@ function Predictor:Cache(id)
 	end
 end
 
-function Predictor:BuildCache()
-	for id = 1, 3000 do
-		self:Cache(id)
+local maxId = 3000
+local totalWait = 3 -- s
+local stepWait = 0.3 -- s
+local step = math.floor(maxId / (totalWait / stepWait))
+
+function Predictor:BuildCache(currentStep)
+	currentStep = currentStep or 0
+	local start = currentStep * step
+	if (start > maxId) then
+		return
 	end
+
+	for id = 1, step do
+		self:Cache(start + id)
+	end
+	if Predictor.OnCacheChange then
+		Predictor:OnCacheChange()
+	end
+
+	C_Timer.After(stepWait, function()
+		Predictor:BuildCache(currentStep + 1)
+	end)
 end
 
-function Predictor:GetValues(text, values, max)
-	-- first let's try to add the id to the cache
+function Predictor:GetValues(text, max, listener)
+	-- first let's try to add the exact mach to the cache
 	Predictor:Cache(tonumber(text))
 
-	local count = 0
+	local function LoadValues()
+		local values = {}
+		local count = 0
+		for id, name in pairs(self.currencyCache) do
+			if (startsWith(tostring(id), text) or string.find(name:lower(), text:lower(), 1, true)) then
+				local info = GetCurrencyInfo(id)
+				local link = GetCurrencyLink(id, info.quantity) or "[" .. name .. "]"
+				values[id] = "|cFFAAAAAA(" .. id .. ")|r " .. getTexture(info.iconFileID) .. link
 
-	for id, name in pairs(self.currencyCache) do
-		if (startsWith(tostring(id), text) or string.find(name:lower(), text:lower(), 1, true)) then
-			local info = GetCurrencyInfo(id)
-			local link = GetCurrencyLink(id, info.quantity) or "[" .. name .. "]"
-			values[id] = "|cFFAAAAAA(" .. id .. ")|r " .. getTexture(info.iconFileID) .. link
-
-			count = count + 1
-			if (count >= max) then break end
+				count = count + 1
+				if (count >= max) then
+					break
+				end
+			end
 		end
+		listener:OnSuccess(values)
 	end
+
+	self.OnCacheChange = function()
+		LoadValues()
+	end
+
+	function listener:OnCancel()
+		self.OnCacheChange = nil
+	end
+
+	LoadValues()
 end
 
 function Predictor:GetHyperlink(key)
