@@ -122,13 +122,15 @@ local function OnRunClick(self)
 	--widget.editBox:ClearFocus()
 
 	local function onError(err)
+		err = err or ""
 		if (widget.OnRunScriptError and type(widget.OnRunScriptError) == "function") then
 			widget:OnRunScriptError(err)
 		end
-		print(err)
+		print("|cFFe53935" .. err)
 		local _, lineNum, msg = err:match("(%b[]):(%d+):(.*)")
+		lineNum = lineNum or 1
 		widget.highlightNum = tonumber(lineNum)
-		widget.lastError = lineNum .. ": " .. (msg or "")
+		widget.lastError = lineNum .. ": " .. (msg or err)
 		UpdateLineNumbers(self)
 		return
 	end
