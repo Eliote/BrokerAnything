@@ -1,4 +1,4 @@
-local Type, Version = "LuaEditBox", 7
+local Type, Version = "LuaEditBox", 8
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then
 	return
@@ -15,10 +15,6 @@ local GetCursorInfo, GetSpellInfo, ClearCursor = GetCursorInfo, GetSpellInfo, Cl
 local CreateFrame, UIParent = CreateFrame, UIParent
 local _G = _G
 
--- Global vars/functions that we don't upvalue since they might get hooked, or upgraded
--- List them here for Mikk's FindGlobals script
--- GLOBALS: ACCEPT, ChatFontNormal
-
 local tostring, floor, stringrep = tostring, math.floor, string.rep
 
 --[[-----------------------------------------------------------------------------
@@ -27,16 +23,14 @@ Support functions
 
 -- self is the widget
 local function Layout(self)
-	local height = 300
 	local parent = self.frame:GetParent()
 	if parent then
-		height = parent.GetHeight and parent:GetHeight()
 		parent = parent:GetParent()
 		if parent then
-			height = parent.GetHeight and parent:GetHeight()
+			local height = parent.GetHeight and parent:GetHeight()
+			self:SetHeight(height - 14)
 		end
 	end
-	self:SetHeight(height - 14)
 end
 
 local function UpdateLineNumbers(self)
@@ -414,6 +408,7 @@ local methods = {
 		self.lineEditBox:SetText("")
 		self:SetDisabled(false)
 		self:SetWidth(200)
+		self:SetHeight(100)
 		self:DisableButton(false)
 		self.entered = nil
 		self:SetMaxLetters(0)
