@@ -148,7 +148,7 @@ function module:AddBroker(currencyId)
 
 	if (not brokerTable.broker) then
 		brokerTable.broker = LibStub("LibDataBroker-1.1"):GetDataObjectByName(brokerName)
-		print(L["Using the existing data broker: "] .. brokerName)
+		--print(L["Using the existing data broker: "] .. brokerName)
 	end
 
 	brokers[currencyId] = brokerTable
