@@ -82,9 +82,16 @@ function module:OnEnable()
 end
 
 function module:RefreshDb()
+	-- Remove brokers already registered
 	for name, _ in pairs(brokersTable) do
 		module:RemoveBroker(name, true)
 	end
+
+	-- If a broker was never enabled, it will not be in the [brokersTable]
+	-- Clear the options to remove them
+	module:RemoveAllCustomBrokersOptions()
+
+	-- Add brokers from the new profile
 	for name, _ in pairs(self.db.profile.brokers) do
 		if (name) then self:AddOrUpdateBroker(name) end
 	end

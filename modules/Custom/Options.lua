@@ -345,8 +345,10 @@ function module:AddToOptions(name)
 	})
 end
 
+local brokerPrefix = "broker_"
+
 function module:GetOptionName(name)
-	return "broker_" .. name
+	return brokerPrefix .. name
 end
 
 function module:GetOption(name)
@@ -359,4 +361,12 @@ end
 
 function module:GetOptions()
 	return { custom = options }
+end
+
+function module:RemoveAllCustomBrokersOptions()
+	for name, _ in pairs(options.args) do
+		if (string.find(name, "^" .. brokerPrefix)) then
+			options.args[name] = nil
+		end
+	end
 end
