@@ -154,6 +154,7 @@ function module:AddBroker(itemID)
 		module.db.profile.ids[itemID] = db
 		db.link = itemLink
 		db.icon = itemIcon
+		db.name = itemName
 		BrokerAnything:UpdateDatabaseDefaultConfigs(configVariables, db)
 
 		module:AddOption(itemID)
@@ -197,6 +198,18 @@ local options = {
 					BrokerAnything:Print(L["Reload UI to take effect!"])
 				end,
 				get = function(info) end,
+				sorting = function()
+					local values = {}
+					for id, item in pairs(module.db.profile.ids) do
+						table.insert(values, id)
+					end
+					table.sort(values, function(a, b)
+						local nameA = module.db.profile.ids[a].name or module.db.profile.ids[a].link or ""
+						local nameB = module.db.profile.ids[b].name or module.db.profile.ids[b].link or ""
+						return nameA < nameB
+					end)
+					return values
+				end,
 				values = function()
 					local values = {}
 
@@ -216,18 +229,31 @@ function module:GetOptions()
 	return options
 end
 
+local orderList = {}
+local orderTable = {}
+
 function module:AddOption(id)
+	local item = module.db.profile.ids[id]
+	if (not orderTable[item.name]) then
+		table.insert(orderList, item.name)
+		table.sort(orderList)
+		for k, v in ipairs(orderList) do
+			orderTable[v] = k
+		end
+	end
+
 	local args = options.item.args
 
 	args[tostring(id)] = {
 		type = 'group',
-		name = module.db.profile.ids[id].link,
-		icon = module.db.profile.ids[id].icon,
+		name = item.link,
+		icon = item.icon,
+		order = function() return orderTable[item.name] or 100 end,
 		args = BrokerAnything:CreateOptions(configVariables, module.db, "ids", id, module.OnOptionChanged)
 	}
 	args[tostring(id)].args.header = {
 		type = "header",
-		name = ElioteUtils.getTexture(module.db.profile.ids[id].icon) .. " " .. module.db.profile.ids[id].link,
+		name = ElioteUtils.getTexture(item.icon) .. " " .. item.link,
 		order = 0
 	}
 end

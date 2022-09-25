@@ -93,6 +93,8 @@ function module:AddBroker(currencyId)
 	end
 
 	local currencyName, currencyAmount, icon = info.name, info.quantity, info.iconFileID
+	local currencyLink = GetCurrencyLink(currencyId, currencyAmount)
+	local currencyColor = (currencyLink and currencyLink:match(".*(|[cC]%x%x%x%x%x%x%x%x).*")) or Colors.WHITE
 
 	local brokerTable = {
 		id = currencyId,
@@ -106,7 +108,7 @@ function module:AddBroker(currencyId)
 		icon = icon or "Interface\\Icons\\INV_Misc_QuestionMark",
 		label = currencyName or currencyId,
 		brokerAnything = {
-			name = Colors.WHITE .. (currencyName or currencyId) .. "|r",
+			name = currencyColor .. (currencyName or currencyId) .. "|r",
 			configPath = { "currency", tostring(currencyId) },
 			category = L["Currency"],
 		},
@@ -162,6 +164,7 @@ function module:AddBroker(currencyId)
 
 	db.name = currencyName
 	db.icon = icon
+	db.link = currencyLink
 	BrokerAnything:UpdateDatabaseDefaultConfigs(configVariables, db)
 
 	module:AddOption(currencyId)
@@ -201,6 +204,18 @@ local options = {
 					BrokerAnything:print(L["Reload UI to take effect!"])
 				end,
 				get = function(info) end,
+				sorting = function()
+					local values = {}
+					for id, item in pairs(module.db.profile.ids) do
+						table.insert(values, id)
+					end
+					table.sort(values, function(a, b)
+						local nameA = module.db.profile.ids[a].name or ""
+						local nameB = module.db.profile.ids[b].name or ""
+						return nameA < nameB
+					end)
+					return values
+				end,
 				values = function()
 					local values = {}
 
@@ -226,18 +241,31 @@ function module:GetOptions()
 	return options
 end
 
+local orderList = {}
+local orderTable = {}
+
 function module:AddOption(id)
+	local item = module.db.profile.ids[id]
+	if (not orderTable[item.name]) then
+		table.insert(orderList, item.name)
+		table.sort(orderList)
+		for k, v in ipairs(orderList) do
+			orderTable[v] = k
+		end
+	end
+
 	local args = options.currency.args
 
 	args[tostring(id)] = {
 		type = 'group',
-		name = module.db.profile.ids[id].name,
-		icon = module.db.profile.ids[id].icon,
+		name = item.link or item.name,
+		icon = item.icon,
+		order = function() return orderTable[item.name] or 100 end,
 		args = BrokerAnything:CreateOptions(configVariables, module.db, "ids", id, module.OnOptionChanged)
 	}
 	args[tostring(id)].args.header = {
 		type = "header",
-		name = ElioteUtils.getTexture(module.db.profile.ids[id].icon) .. " " .. module.db.profile.ids[id].name,
+		name = ElioteUtils.getTexture(item.icon) .. " " .. (item.link or item.name),
 		order = 0
 	}
 end

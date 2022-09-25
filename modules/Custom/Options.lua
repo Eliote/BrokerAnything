@@ -64,7 +64,18 @@ local options = {
 	}
 }
 
+local orderList = {}
+local orderTable = {}
+
 function module:AddToOptions(name)
+	if (not orderTable[name]) then
+		table.insert(orderList, name)
+		table.sort(orderList)
+		for k, v in ipairs(orderList) do
+			orderTable[v] = k
+		end
+	end
+
 	if (self:GetOption(name)) then return end
 
 	local function getBrokerOrNull()
@@ -73,7 +84,7 @@ function module:AddToOptions(name)
 	end
 
 	self:SetOption(name, {
-		name = name,
+		order = function() return orderTable[name] or 100 end,
 		icon = function()
 			local icon = module:GetBrokerInfo(name).icon
 			if empty(icon) then
