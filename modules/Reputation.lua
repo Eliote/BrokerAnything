@@ -199,7 +199,7 @@ function module:AddBroker(factionId)
 			icon = icon or "Interface\\Icons\\INV_MISC_NOTE_03",
 			label = name,
 			brokerAnything = {
-				name = name,
+				name = Colors.WHITE .. name,
 				configPath = { "reputation", tostring(factionId) },
 				category = L["Reputation"],
 			},
