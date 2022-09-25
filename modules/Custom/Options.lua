@@ -84,6 +84,11 @@ function module:AddToOptions(name)
 	end
 
 	self:SetOption(name, {
+		name = function()
+			local enabled = module:GetBrokerInfo(name).enable
+			local color = enabled and "|cFFFFFFFF" or "|cFF808080"
+			return color .. name
+		end,
 		order = function() return orderTable[name] or 100 end,
 		icon = function()
 			local icon = module:GetBrokerInfo(name).icon
