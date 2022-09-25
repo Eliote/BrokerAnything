@@ -24,8 +24,8 @@ function Predictor:Cache(id)
 end
 
 local maxId = 3000
-local totalWait = 3 -- s
-local stepWait = 0.3 -- s
+local totalWait = 1 -- s
+local stepWait = 0.2 -- s
 local step = math.floor(maxId / (totalWait / stepWait))
 
 function Predictor:BuildCache(currentStep)
