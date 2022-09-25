@@ -223,7 +223,7 @@ local options = {
 						local info = GetCurrencyInfo(id)
 						if info then
 							local link = GetCurrencyLink(id, info.quantity) or info.name or ""
-							values[id] = ElioteUtils.getTexture(info.iconFileID) .. link .. " |cFFAAAAAA(id:" .. id .. ")|r"
+							values[id] = ElioteUtils.getTexture(info.iconFileID) .. " " .. link .. " |cFFAAAAAA(id:" .. id .. ")|r"
 						else
 							values[id] = "|cFFAAAAAA(id:" .. id .. ")"
 						end

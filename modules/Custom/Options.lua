@@ -53,8 +53,13 @@ local options = {
 			values = function()
 				local values = {}
 
-				for name, _ in pairs(module.db.profile.brokers) do
-					values[name] = name
+				for name, broker in pairs(module.db.profile.brokers) do
+					local icon = broker.icon
+					if empty(icon) then
+						icon = "Interface\\Icons\\INV_Misc_QuestionMark"
+					end
+					local color = broker.enable and " |cFFFFFFFF" or " |cFF808080"
+					values[name] = ElioteUtils.getTexture(icon) .. color .. name
 				end
 
 				return values

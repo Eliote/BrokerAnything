@@ -214,7 +214,7 @@ local options = {
 					local values = {}
 
 					for id, item in pairs(module.db.profile.ids) do
-						values[id] = ElioteUtils.getTexture(item.icon) .. item.link .. " |cFFAAAAAA(id:" .. id .. ")|r"
+						values[id] = ElioteUtils.getTexture(item.icon) .. " " .. item.link .. " |cFFAAAAAA(id:" .. id .. ")|r"
 					end
 
 					return values

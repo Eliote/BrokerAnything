@@ -404,7 +404,7 @@ local options = {
 					local values = {}
 
 					for id, faction in pairs(module.db.profile.ids) do
-						values[id] = ElioteUtils.getTexture(faction.icon) .. faction.name .. " |cFFAAAAAA(id:" .. id .. ")|r"
+						values[id] = ElioteUtils.getTexture(faction.icon) .. " " .. faction.name .. " |cFFAAAAAA(id:" .. id .. ")|r"
 					end
 
 					return values
