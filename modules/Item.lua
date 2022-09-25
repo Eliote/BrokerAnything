@@ -75,17 +75,17 @@ end
 function module:AddBroker(itemID)
 	if (not itemID) then return end
 	if (not tonumber(itemID)) then
-		print(L("Invalid ID! (${id})", { id = itemID }))
+		BrokerAnything:Print(L("Invalid ID! (${id})", { id = itemID }))
 		return
 	end
 	if (brokers[itemID]) then
-		print(L("Already added! (${id})", { id = itemID }))
+		BrokerAnything:Print(L("Already added! (${id})", { id = itemID }))
 		return
 	end
 
 	local item = Item:CreateFromItemID(tonumber(itemID))
 	if (not item or item:IsItemEmpty()) then
-		print(L("No item with id '${id}' found!", { id = itemID }))
+		BrokerAnything:Print(L("No item with id '${id}' found!", { id = itemID }))
 		return
 	end
 	item:ContinueOnItemLoad(function()
@@ -145,7 +145,7 @@ function module:AddBroker(itemID)
 
 		if (not brokerTable.broker) then
 			brokerTable.broker = LibStub("LibDataBroker-1.1"):GetDataObjectByName(brokerName)
-			--print(L["Using the existing data broker: "] .. brokerName)
+			--BrokerAnything:Print(L["Using the existing data broker: "] .. brokerName)
 		end
 
 		brokers[itemID] = brokerTable
@@ -194,7 +194,7 @@ local options = {
 					brokers[value].broker.value = nil
 					brokers[value].broker.text = L["Reload UI!"]
 					brokers[value] = nil
-					print(L["Reload UI to take effect!"])
+					BrokerAnything:Print(L["Reload UI to take effect!"])
 				end,
 				get = function(info) end,
 				values = function()

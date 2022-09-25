@@ -78,17 +78,17 @@ end
 function module:AddBroker(currencyId)
 	if (not currencyId) then return end
 	if (not tonumber(currencyId)) then
-		print(L("Invalid ID! (${id})", { id = currencyId }))
+		BrokerAnything:Print(L("Invalid ID! (${id})", { id = currencyId }))
 		return
 	end
 	if (brokers[currencyId]) then
-		print(L("Already added! (${id})", { id = currencyId }))
+		BrokerAnything:Print(L("Already added! (${id})", { id = currencyId }))
 		return
 	end
 
 	local info = GetCurrencyInfo(currencyId)
 	if (not info) then
-		print(L("No currency with id '${id}' found!", { id = currencyId }))
+		BrokerAnything:Print(L("No currency with id '${id}' found!", { id = currencyId }))
 		return
 	end
 
@@ -148,7 +148,7 @@ function module:AddBroker(currencyId)
 
 	if (not brokerTable.broker) then
 		brokerTable.broker = LibStub("LibDataBroker-1.1"):GetDataObjectByName(brokerName)
-		--print(L["Using the existing data broker: "] .. brokerName)
+		--BrokerAnything:Print(L["Using the existing data broker: "] .. brokerName)
 	end
 
 	brokers[currencyId] = brokerTable
@@ -198,7 +198,7 @@ local options = {
 				set = function(info, value)
 					module.db.profile.ids[value] = nil
 					module:RemoveBroker(value)
-					print(L["Reload UI to take effect!"])
+					BrokerAnything:print(L["Reload UI to take effect!"])
 				end,
 				get = function(info) end,
 				values = function()

@@ -166,18 +166,18 @@ function module:AddBroker(factionId)
 
 	factionId = tonumber(factionId)
 	if (not factionId) then
-		print(L("Invalid ID! (${id})", { id = factionId }))
+		BrokerAnything:Print(L("Invalid ID! (${id})", { id = factionId }))
 		return
 	end
 
 	if (brokers[factionId]) then
-		print(L("Already added! (${id})", { id = factionId }))
+		BrokerAnything:Print(L("Already added! (${id})", { id = factionId }))
 		return
 	end
 
 	local repName, _, _, _, _, repValue = GetFactionInfoByID(factionId)
 	if (not repName) then
-		print(L("Invalid ID! (${id})", { id = factionId }))
+		BrokerAnything:Print(L("Invalid ID! (${id})", { id = factionId }))
 		return
 	end
 
@@ -277,7 +277,7 @@ function module:AddBroker(factionId)
 
 	if (not brokerTable.broker) then
 		brokerTable.broker = LibStub("LibDataBroker-1.1"):GetDataObjectByName(brokerName)
-		--print(L["Using the existing data broker: "] .. brokerName)
+		--BrokerAnything:Print(L["Using the existing data broker: "] .. brokerName)
 	end
 
 	brokers[factionId] = brokerTable
@@ -397,7 +397,7 @@ local options = {
 				set = function(info, value)
 					module.db.profile.ids[value] = nil
 					module:RemoveBroker(value)
-					print(L["Reload UI to take effect!"])
+					BrokerAnything:Print(L["Reload UI to take effect!"])
 				end,
 				get = function(info) end,
 				values = function()

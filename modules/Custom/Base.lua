@@ -110,7 +110,7 @@ function module:RemoveBroker(name, keepDatabase)
 	self:DisableBroker(name)
 	if not keepDatabase then
 		self:SetBrokerInfo(name, nil)
-		print(L["Reload UI to take effect!"])
+		BrokerAnything:Print(L["Reload UI to take effect!"])
 	end
 	self:SetOption(name, nil)
 end
@@ -230,7 +230,7 @@ end
 
 function module:RenameBroker(name, newName)
 	if (self:GetBrokerInfo(newName)) then
-		print(L("Broker '${newName}' already exists!", { newName = newName }))
+		BrokerAnything:Print(L("Broker '${newName}' already exists!", { newName = newName }))
 		return
 	end
 
@@ -307,7 +307,7 @@ function module:ImportBroker(name, value, isForPrint)
 		local success, data = self:DecodeAndDecompressData(value, isForPrint)
 
 		if (not success) then
-			print(L["Corrupted data!"])
+			BrokerAnything:Print(L["Corrupted data!"])
 			return false
 		end
 

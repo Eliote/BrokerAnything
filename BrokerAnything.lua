@@ -310,3 +310,7 @@ function BrokerAnything:OpenConfigDialog(configPath)
 		dialogFrame:StopMovingOrSizing()
 	end)
 end
+
+function BrokerAnything:Print(...)
+	print("|cFF81c784" .. self:GetName() .. "|r:", ...)
+end
