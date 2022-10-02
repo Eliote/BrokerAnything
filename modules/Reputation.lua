@@ -351,9 +351,11 @@ function module:GetButtonText(factionId)
 			text = text .. "/" .. max
 		end
 	end
-	local percent = math.floor((value) * 100 / (max))
+	local percent
 	if (max == 0) then
 		percent = 100
+	else
+		percent = math.floor((value) * 100 / (max))
 	end
 
 	if showvalue then
