@@ -165,6 +165,7 @@ function module:AddBroker(currencyId)
 	db.name = currencyName
 	db.icon = icon
 	db.link = currencyLink
+	db.color = currencyColor
 	BrokerAnything:UpdateDatabaseDefaultConfigs(configVariables, db)
 
 	module:AddOption(currencyId)
@@ -256,16 +257,18 @@ function module:AddOption(id)
 
 	local args = options.currency.args
 
+	local coloredName = (item.color or "") .. item.name .. "|r"
+
 	args[tostring(id)] = {
 		type = 'group',
-		name = item.link or item.name,
+		name = coloredName,
 		icon = item.icon,
 		order = function() return orderTable[item.name] or 100 end,
 		args = BrokerAnything:CreateOptions(configVariables, module.db, "ids", id, module.OnOptionChanged)
 	}
 	args[tostring(id)].args.header = {
 		type = "header",
-		name = ElioteUtils.getTexture(item.icon) .. " " .. (item.link or item.name),
+		name = ElioteUtils.getTexture(item.icon) .. " " .. coloredName,
 		order = 0
 	}
 end

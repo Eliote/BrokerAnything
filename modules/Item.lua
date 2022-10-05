@@ -155,6 +155,7 @@ function module:AddBroker(itemID)
 		db.link = itemLink
 		db.icon = itemIcon
 		db.name = itemName
+		db.color = itemColor
 		BrokerAnything:UpdateDatabaseDefaultConfigs(configVariables, db)
 
 		module:AddOption(itemID)
@@ -242,18 +243,19 @@ function module:AddOption(id)
 		end
 	end
 
+	local coloredName = (item.color or "") .. item.name .. "|r"
 	local args = options.item.args
 
 	args[tostring(id)] = {
 		type = 'group',
-		name = item.link,
+		name = coloredName,
 		icon = item.icon,
 		order = function() return orderTable[item.name] or 100 end,
 		args = BrokerAnything:CreateOptions(configVariables, module.db, "ids", id, module.OnOptionChanged)
 	}
 	args[tostring(id)].args.header = {
 		type = "header",
-		name = ElioteUtils.getTexture(item.icon) .. " " .. item.link,
+		name = ElioteUtils.getTexture(item.icon) .. " " .. coloredName,
 		order = 0
 	}
 end

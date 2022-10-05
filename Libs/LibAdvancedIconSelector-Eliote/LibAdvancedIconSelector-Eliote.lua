@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibAdvancedIconSelector-Eliote"
-local MINOR_VERSION = 3
+local MINOR_VERSION = 4
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub to operate") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -231,7 +231,18 @@ function IconSelectorWindow:Create(name, parent, options)
 		end)
 	end
 
-	if options.enableResize then self:SetResizable(true) end
+	if options.enableResize then
+		self:SetResizable(true)
+		self.resizeButton = CreateFrame("Button", nil, self, PanelResizeButtonMixin and "PanelResizeButtonTemplate")
+		self.resizeButton:SetSize(16, 16)
+		self.resizeButton:SetScript("OnMouseDown", function()
+			self:StartSizing()
+		end)
+		self.resizeButton:SetScript("OnMouseUp", function()
+			self:StopMovingOrSizing()
+		end)
+		self.resizeButton:SetPoint("BOTTOMRIGHT", -8, 8)
+	end
 	if options.enableMove then self:SetMovable(true) end
 	if not options.allowOffscreen then self:SetClampedToScreen(true) end
 	if options.enableResize or options.enableMove then self:EnableMouse(true) end
@@ -239,23 +250,7 @@ function IconSelectorWindow:Create(name, parent, options)
 	self:RegisterForDrag("LeftButton")
 
 	self:SetScript("OnDragStart", function(self, _)
-		local x, y = self.mouseDownX, self.mouseDownY
-		if x and y then
-			local scale = UIParent:GetEffectiveScale()
-			x = x / scale
-			y = y / scale
-			y = (y - self:GetBottom()) * scale
-			x = (self:GetRight() - x) * scale
-
-			-- (set anchorTo if you want your frame to conditionally be moveable / resizeable)
-			if not options.anchorFrame or not options.anchorFrame:IsShown() then
-				if options.enableResize and x < 20 and y < 20 then
-					self:StartSizing()
-				elseif options.enableMove then
-					self:StartMoving()
-				end
-			end
-		end
+		self:StartMoving()
 	end)
 
 	self:SetScript("OnDragStop", function(self)

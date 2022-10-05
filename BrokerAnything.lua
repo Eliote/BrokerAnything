@@ -273,6 +273,7 @@ function BrokerAnything:CreateOptions(variables, db, profileKey, id, onOptionCha
 			ret[k] = {
 				type = "execute",
 				name = v.title,
+				width = string.len(v.title) > 20 and "double",
 				func = function() v.func(id) end
 			}
 		end
