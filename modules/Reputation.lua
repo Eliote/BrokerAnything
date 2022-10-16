@@ -9,7 +9,20 @@ local ElioteUtils = LibStub("LibElioteUtils-1.0")
 
 local SEX = UnitSex("player")
 
-local GetFriendshipReputation = GetFriendshipReputation or nop
+local GetFriendshipReputation = GetFriendshipReputation
+if not GetFriendshipReputation and C_GossipInfo and C_GossipInfo.GetFriendshipReputation then
+	GetFriendshipReputation = function(factionId)
+		local info = C_GossipInfo.GetFriendshipReputation(factionId)
+		if not info then return end
+		local texture = info.texture
+		if (texture == 0) then
+			texture = nil
+		end
+		--     friendID,                 friendRep,     _, _, friendText, texture, friendTextLevel, friendThreshold,     nextFriendThreshold
+		return info.friendshipFactionID, info.standing, nil, nil, info.text, texture, info.reaction, info.reactionThreshold, info.nextThreshold
+	end
+end
+GetFriendshipReputation = GetFriendshipReputation or nop
 
 local brokers = {}
 module.brokers = brokers

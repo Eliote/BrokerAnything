@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibAdvancedIconSelector-Eliote"
-local MINOR_VERSION = 4
+local MINOR_VERSION = 5
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub to operate") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -176,6 +176,7 @@ function IconSelectorWindow:Create(name, parent, options)
 	self:Hide()
 	self:SetFrameStrata("FULLSCREEN_DIALOG")
 	self:SetSize(options.width, options.height)
+	self.SetMinResize = self.SetMinResize or self.SetResizeBounds
 	self:SetMinResize(options.minResizeWidth, options.minResizeHeight)
 	self:SetToplevel(true)
 	self.options = options
@@ -666,8 +667,8 @@ function IconSelectorFrame.private_OnInternalFrameSizeChanged(internalFrame, wid
 			-- Create the button if it doesn't exist (but don't set its normal texture yet)
 			local button = parent.icons[i]
 			if not button then
-				button = CreateFrame("CheckButton", format(widgetName .. "_MTAISButton%d", i), parent.internalFrame, "PopupButtonTemplate")
-				button.icon = _G[widgetName .. format("_MTAISButton%dIcon", i)]
+				button = CreateFrame("CheckButton", format(widgetName .. "_MTAISButton%d", i), parent.internalFrame, "GearSetPopupButtonTemplate")
+				button.icon = button.Icon or _G[widgetName .. format("_MTAISButton%dIcon", i)]
 				parent.icons[i] = button
 				button:SetSize(36, 36)
 				button:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
