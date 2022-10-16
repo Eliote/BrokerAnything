@@ -17,6 +17,7 @@ Font\Fonts.xml
 
 Locales.lua
 
+widgets\BrokerPreviewWidget.lua
 widgets\CurrencyWidget.lua
 widgets\EventWidget.lua
 widgets\ItemWidget.lua

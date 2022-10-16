@@ -271,6 +271,16 @@ function module:AddOption(id)
 		name = ElioteUtils.getTexture(item.icon) .. " " .. coloredName,
 		order = 0
 	}
+	args[tostring(id)].args.preview = {
+		type = "input",
+		name = brokers[id].broker.label,
+		set = function(info, val) end,
+		get = function(info)
+			return brokers[id].broker.id
+		end,
+		order = -1,
+		dialogControl = "BrokerAnything-BrokerPreview-Widget"
+	}
 end
 
 function module:RemoveOption(id)
