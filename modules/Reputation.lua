@@ -13,7 +13,9 @@ local GetFriendshipReputation = GetFriendshipReputation
 if not GetFriendshipReputation and C_GossipInfo and C_GossipInfo.GetFriendshipReputation then
 	GetFriendshipReputation = function(factionId)
 		local info = C_GossipInfo.GetFriendshipReputation(factionId)
-		if not info then return end
+		if not info or not info.friendshipFactionID or info.friendshipFactionID == 0 then
+			return
+		end
 		local texture = info.texture
 		if (texture == 0) then
 			texture = nil
@@ -23,6 +25,10 @@ if not GetFriendshipReputation and C_GossipInfo and C_GossipInfo.GetFriendshipRe
 	end
 end
 GetFriendshipReputation = GetFriendshipReputation or nop
+
+local IsMajorFaction = C_Reputation.IsMajorFaction or nop
+local GetMajorFactionData = C_MajorFactions and C_MajorFactions.GetMajorFactionData and C_MajorFactions.GetMajorFactionData or nop
+local HasMaximumRenown = C_MajorFactions and C_MajorFactions.HasMaximumRenown and C_MajorFactions.HasMaximumRenown or nop
 
 local brokers = {}
 module.brokers = brokers
@@ -78,10 +84,10 @@ end
 local function lessUsedIcons()
 	if module.db.profile.ids then
 		local used = {}
-		for i, v in ipairs(icons) do
+		for _, v in ipairs(icons) do
 			used[v] = 0
 		end
-		for k, v in pairs(module.db.profile.ids) do
+		for _, v in pairs(module.db.profile.ids) do
 			if (v and v.icon) then
 				local icon = string.gsub(v.icon, "Interface\\Icons\\", "")
 				used[icon] = (used[icon] or 0) + 1
@@ -158,6 +164,10 @@ function module:OnEnable()
 	self:RefreshDb()
 
 	self:RegisterEvent('UPDATE_FACTION')
+
+	if (C_Reputation.IsMajorFaction) then
+		self:RegisterEvent('MAJOR_FACTION_RENOWN_LEVEL_CHANGED')
+	end
 end
 
 function module:RefreshDb()
@@ -166,7 +176,9 @@ function module:RefreshDb()
 	end
 
 	for k, v in pairs(self.db.profile.ids) do
-		if (v) then module:AddBroker(k) end
+		if (v) then
+			module:AddBroker(k)
+		end
 	end
 end
 
@@ -174,8 +186,24 @@ function module:UPDATE_FACTION()
 	updateAll()
 end
 
+function module:MAJOR_FACTION_RENOWN_LEVEL_CHANGED(_, factionId, newRenownLevel, ...)
+	print(_, factionId, newRenownLevel, ...)
+	local data = GetMajorFactionData(factionId)
+	if (brokers[factionId].sessionStart) then
+		brokers[factionId].sessionStart[newRenownLevel] = { start = 0, max = data.renownLevelThreshold }
+	else
+		brokers[factionId].sessionStart = {
+			startLvl = data.renownLevel,
+			[data.renownLevel] = { start = 0, max = data.renownLevelThreshold }
+		}
+	end
+	updateAll()
+end
+
 function module:AddBroker(factionId)
-	if (not factionId) then return end
+	if (not factionId) then
+		return
+	end
 
 	factionId = tonumber(factionId)
 	if (not factionId) then
@@ -194,18 +222,34 @@ function module:AddBroker(factionId)
 		return
 	end
 
-	local _, _, _, _, _, friendTexture = GetFriendshipReputation(factionId)
+	local sessionStart = repValue
+	local friendID, friendRep, _, _, _, friendTexture = GetFriendshipReputation(factionId)
+	if (friendID) then
+		sessionStart = friendRep
+	end
 
 	local brokerName = "BrokerAnything_Reputation_" .. factionId
 	local name = repName .. "|r"
 	local icon = friendTexture or (module.db.profile.ids[factionId] and module.db.profile.ids[factionId].icon)
+
+	if (IsMajorFaction(factionId)) then
+		local data = GetMajorFactionData(factionId)
+		local isCapped = HasMaximumRenown(factionId)
+		local current = isCapped and data.renownLevelThreshold or data.renownReputationEarned or 0
+		icon = ([[Interface\Icons\UI_MajorFaction_%s]]):format(data.textureKit)
+		sessionStart = {
+			startLvl = data.renownLevel,
+			[data.renownLevel] = { start = current, max = data.renownLevelThreshold }
+		}
+	end
+
 	if not icon then
 		icon = getRandomIcon()
 	end
 
 	local brokerTable = {
 		id = factionId,
-		sessionStart = repValue,
+		sessionStart = sessionStart,
 		broker = LibStub("LibDataBroker-1.1"):NewDataObject(brokerName, {
 			id = brokerName,
 			type = "data source",
@@ -217,60 +261,36 @@ function module:AddBroker(factionId)
 				category = L["Reputation"],
 			},
 			OnTooltipShow = function(tooltip)
-				if not brokers[factionId] then return end
-
-				local name, description, standingId, barMin, barMax, barValue, atWarWith, canToggleAtWar = GetFactionInfoByID(factionId)
-				if not name then return end
-
-				local current = barValue - barMin
-				local maximum = barMax - barMin
-				local standingText = ((SEX == 2 and _G["FACTION_STANDING_LABEL" .. standingId]) or
-						_G["FACTION_STANDING_LABEL" .. standingId .. "_FEMALE"] or "?")
-				local session = barValue - brokers[factionId].sessionStart
-				local standingColor = getStandColor(standingId)
-				local hasRewardPending = false
-				local isParagon = C_Reputation.IsFactionParagon(factionId)
-
-				if (isParagon) then
-					standingColor = "|cFF00FFFF"
-
-					local currentValue, threshold, rewardQuestID, hasReward = C_Reputation.GetFactionParagonInfo(factionId);
-					hasRewardPending = hasReward
-
-					current = mod(currentValue, threshold)
-					maximum = threshold
+				if not brokers[factionId] then
+					return
 				end
 
-				local friendID, friendRep, _, _, friendText, _, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionId)
-				if (friendID) then
-					standingText = friendTextLevel
+				local info = module:GetRepInfo(factionId)
+				if (not info) then
+					return
+				end
 
-					if (nextFriendThreshold) then
-						maximum, current = nextFriendThreshold - friendThreshold, friendRep - friendThreshold
-					else
-						maximum, current = 1, 1
+				tooltip:AddLine(Colors.WHITE .. info.name)
+				tooltip:AddLine(info.description, nil, nil, nil, true)
+				if (info.repType == "friend") then
+					if (info.description and info.description ~= "") then
+						tooltip:AddLine(" ")
 					end
-				end
-
-				tooltip:AddLine(Colors.WHITE .. name)
-				tooltip:AddLine(description, nil, nil, nil, true)
-				if (friendID) then
-					tooltip:AddLine(" ")
-					tooltip:AddLine(friendText, nil, nil, nil, true)
+					tooltip:AddLine(info.friendText, nil, nil, nil, true)
 				end
 				tooltip:AddLine(" ")
 				tooltip:AddLine(Colors.WHITE .. "[BrokerAnything]")
-				if isParagon then
+				if (info.repType == "paragon") then
 					tooltip:AddLine(Colors.WHITE .. L[" - Paragom Reputation - "])
 				end
-				if hasRewardPending then
+				if (info.hasRewardPending) then
 					tooltip:AddLine(L["Has Reward Pending!"])
 				end
-				tooltip:AddDoubleLine(L["Standing:"], standingColor .. standingText)
-				tooltip:AddDoubleLine(L["Reputation:"], standingColor .. current .. "/" .. maximum)
-				tooltip:AddDoubleLine(L["This session:"], BrokerAnything:FormatBalance(session, true))
-				if (canToggleAtWar) then
-					tooltip:AddDoubleLine(L["At war:"], BrokerAnything:FormatBoolean(atWarWith))
+				tooltip:AddDoubleLine(L["Standing:"], info.color .. info.standingText)
+				tooltip:AddDoubleLine(L["Reputation:"], info.color .. info.currentValue .. "/" .. info.currentMax)
+				tooltip:AddDoubleLine(L["This session:"], BrokerAnything:FormatBalance(info.balance, true))
+				if (info.canToggleAtWar) then
+					tooltip:AddDoubleLine(L["At war:"], BrokerAnything:FormatBoolean(info.atWarWith))
 				end
 
 				tooltip:Show()
@@ -308,67 +328,137 @@ function module:AddBroker(factionId)
 	module:UpdateBroker(brokerTable)
 end
 
-function module:GetValueAndMaximum(standingId, barValue, bottomValue, topValue, factionId)
-	if (standingId == nil) then return "0", "0", "|cFFFF0000", "??? - " .. (factionId .. "?") end
-
-	local current = barValue - bottomValue
-	local maximun = topValue - bottomValue
-	local color = getStandColor(standingId)
-	local standingText = " (" .. ((SEX == 2 and _G["FACTION_STANDING_LABEL" .. standingId]) or _G["FACTION_STANDING_LABEL" .. standingId .. "_FEMALE"] or "?") .. ")"
-
+function module:GetSessionBalanceRep(factionId, repBarValue)
+	if not brokers[factionId] then
+		return 0
+	end
 	if ((brokers[factionId].sessionStart or 0) == 0) then
-		brokers[factionId].sessionStart = barValue
+		brokers[factionId].sessionStart = repBarValue
 	end
-	local session = barValue - brokers[factionId].sessionStart
+	return repBarValue - brokers[factionId].sessionStart
+end
 
-	if (C_Reputation.IsFactionParagon(factionId)) then
-		color = "|cFF00FFFF"
-
-		local currentValue, threshold, _, hasRewardPending = C_Reputation.GetFactionParagonInfo(factionId);
-
-		if hasRewardPending then standingText = standingText .. "*" end
-
-		return mod(currentValue, threshold), threshold, color, standingText, hasRewardPending, session
+function module:GetSessionBalanceMajorFaction(factionId, data)
+	if (not brokers[factionId].sessionStart) then
+		brokers[factionId].sessionStart = {
+			startLvl = data.renownLevel,
+			[data.renownLevel] = { start = 0, max = data.renownLevelThreshold }
+		}
 	end
-
-	local friendID, friendRep, _, _, _, _, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionId)
-	if (friendID) then
-		standingText = " (" .. friendTextLevel .. ")"
-
-		if (nextFriendThreshold) then
-			maximun, current = nextFriendThreshold - friendThreshold, friendRep - friendThreshold
-		else
-			maximun, current = 1, 1
+	local balance = 0
+	local start = brokers[factionId].sessionStart.startLvl
+	local currentLvl = data.renownLevel
+	local currentXp = data.renownReputationEarned
+	for i = start, currentLvl do
+		local saved = brokers[factionId].sessionStart[i]
+		-- we might not have data yet if we just leveled and UPDATE_FACTION run before MAJOR_FACTION_RENOWN_LEVEL_CHANGED
+		if (saved) then
+			local endXp = (currentLvl == i) and currentXp or saved.max
+			balance = balance + (endXp - saved.start)
 		end
 	end
+	return balance
+end
 
-	return current, maximun, color, standingText, nil, session
+local function GetStandingIdText(standingId)
+	return ((SEX == 2 and _G["FACTION_STANDING_LABEL" .. standingId]) or _G["FACTION_STANDING_LABEL" .. standingId .. "_FEMALE"] or "?")
+end
+
+function module:GetStandardizeValues(standingId, barValue, bottomValue, topValue, factionId)
+	if (IsMajorFaction(factionId)) then
+		local color = "|cFF00BFF3"
+		local data = GetMajorFactionData(factionId)
+		local isCapped = HasMaximumRenown(factionId)
+		local current = isCapped and data.renownLevelThreshold or data.renownReputationEarned or 0
+		local standingText = " (" .. (RENOWN_LEVEL_LABEL .. data.renownLevel) .. ")"
+		local session = module:GetSessionBalanceMajorFaction(factionId, data)
+		local hasRewardPending = C_Reputation.IsFactionParagon(factionId) and select(4, C_Reputation.GetFactionParagonInfo(factionId))
+		return current, data.renownLevelThreshold, color, standingText, hasRewardPending, session, "major", nil
+	end
+
+	if (standingId == nil) then
+		return "0", "0", "|cFFFF0000", "??? - " .. (factionId .. "?")
+	end
+
+	if (C_Reputation.IsFactionParagon(factionId)) then
+		local color = "|cFF00FFFF"
+		local currentValue, threshold, _, hasRewardPending = C_Reputation.GetFactionParagonInfo(factionId);
+		local standingText = " (" .. GetStandingIdText(standingId) .. ")"
+		if hasRewardPending then
+			standingText = standingText .. "*"
+		end
+		local session = module:GetSessionBalanceRep(standingId, barValue)
+		return mod(currentValue, threshold), threshold, color, standingText, hasRewardPending, session, "paragon", nil
+	end
+
+	local friendID, friendRep, _, _, friendText, _, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionId)
+	if (friendID) then
+		local color = getStandColor(standingId)
+		local standingText = " (" .. friendTextLevel .. ")"
+		local maximun, current = 1, 1
+		if (nextFriendThreshold) then
+			maximun, current = nextFriendThreshold - friendThreshold, friendRep - friendThreshold
+		end
+		local session = module:GetSessionBalanceRep(standingId, friendRep)
+		return current, maximun, color, standingText, nil, session, "friend", friendText
+	end
+
+	local color = getStandColor(standingId)
+	local standingText = " (" .. GetStandingIdText(standingId) .. ")"
+	local current = barValue - bottomValue
+	local maximun = topValue - bottomValue
+	local session = module:GetSessionBalanceRep(standingId, barValue)
+	return current, maximun, color, standingText, nil, session, "reputation", nil
+end
+
+function module:GetRepInfo(factionId)
+	local name, description, standingID, bottomValue, topValue, barValue, atWarWith, canToggleAtWar = GetFactionInfoByID(factionId)
+	if not name then
+		return nil
+	end
+
+	local value, max, color, standingText, hasRewardPending, balance, repType, friendText = module:GetStandardizeValues(
+			standingID, barValue, bottomValue, topValue, factionId
+	)
+
+	return {
+		name = name,
+		description = description,
+		friendText = friendText,
+		currentValue = value,
+		currentMax = max,
+		color = color,
+		standingText = standingText,
+		hasRewardPending = hasRewardPending,
+		balance = balance,
+		repType = repType,
+		atWarWith = atWarWith,
+		canToggleAtWar = canToggleAtWar,
+	}
 end
 
 function module:GetButtonText(factionId)
-	local name, _, standingID, bottomValue, topValue, barValue = GetFactionInfoByID(factionId)
-
-	if not name then
+	local info = module:GetRepInfo(factionId)
+	if (not info) then
 		return ""
 	end
-	local value, max, color, _, hasRewardPending, balance = module:GetValueAndMaximum(standingID, barValue, bottomValue, topValue, factionId)
 
-	local text = "" .. color
+	local text = "" .. info.color
 
 	local showvalue = module.db.profile.ids[factionId].showValue
 	if showvalue then
-		text = text .. value
+		text = text .. info.currentValue
 
 		local hideMax = module.db.profile.ids[factionId].hideMax
 		if not hideMax then
-			text = text .. "/" .. max
+			text = text .. "/" .. info.currentMax
 		end
 	end
 	local percent
-	if (max == 0) then
+	if (info.currentMax == 0) then
 		percent = 100
 	else
-		percent = math.floor((value) * 100 / (max))
+		percent = math.floor((info.currentValue) * 100 / (info.currentMax))
 	end
 
 	if showvalue then
@@ -377,13 +467,13 @@ function module:GetButtonText(factionId)
 		text = text .. percent .. "%"
 	end
 
-	if hasRewardPending then
+	if info.hasRewardPending then
 		text = "*" + text
 	end
 
 	local showBalance = module.db.profile.ids[factionId].showBalance
-	if showBalance and balance > 0 then
-		text = text .. BrokerAnything:FormatBalance(balance)
+	if showBalance and info.balance > 0 then
+		text = text .. BrokerAnything:FormatBalance(info.balance)
 	end
 
 	return text
@@ -398,7 +488,7 @@ local options = {
 				type = 'input',
 				name = L["Add"],
 				width = 'full',
-				set = function(info, value)
+				set = function(_, value)
 					module:AddBroker(ElioteUtils.getId(value))
 				end,
 				get = false,
@@ -409,12 +499,13 @@ local options = {
 				type = 'select',
 				name = L["Remove"],
 				width = 'full',
-				set = function(info, value)
+				set = function(_, value)
 					module.db.profile.ids[value] = nil
 					module:RemoveBroker(value)
 					BrokerAnything:Print(L["Reload UI to take effect!"])
 				end,
-				get = function(info) end,
+				get = function()
+				end,
 				values = function()
 					local values = {}
 
@@ -451,8 +542,9 @@ function module:AddOption(id)
 	args[tostring(id)].args.preview = {
 		type = "input",
 		name = brokers[id].broker.label,
-		set = function(info, val) end,
-		get = function(info)
+		set = function()
+		end,
+		get = function()
 			return brokers[id].broker.id
 		end,
 		order = -1,
