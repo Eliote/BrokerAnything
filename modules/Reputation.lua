@@ -187,6 +187,9 @@ function module:UPDATE_FACTION()
 end
 
 function module:MAJOR_FACTION_RENOWN_LEVEL_CHANGED(_, factionId, newRenownLevel, ...)
+	if (not brokers[factionId]) then
+		return
+	end
 	local data = GetMajorFactionData(factionId)
 	if (brokers[factionId].sessionStart) then
 		brokers[factionId].sessionStart[newRenownLevel] = { start = 0, max = data.renownLevelThreshold }
