@@ -39,6 +39,7 @@ local configVariables = {
 	showValue = { title = L["Show value"], default = true },
 	hideMax = { title = L["Hide maximun"], default = true },
 	showBalance = { title = L["Show balance"], default = true },
+	breakUpLargeNumbers = { title = L["Format large numbers"], default = true },
 	icon = { title = L["Icon"], type = "icon" },
 	resetBalance = {
 		title = L["Reset session balance"],
@@ -288,9 +289,12 @@ function module:AddBroker(factionId)
 				if (info.hasRewardPending) then
 					tooltip:AddLine(L["Has Reward Pending!"])
 				end
+				local breakUpLargeNumbers = module.db.profile.ids[factionId].breakUpLargeNumbers
 				tooltip:AddDoubleLine(L["Standing:"], info.color .. info.standingText)
-				tooltip:AddDoubleLine(L["Reputation:"], info.color .. info.currentValue .. "/" .. info.currentMax)
-				tooltip:AddDoubleLine(L["This session:"], BrokerAnything:FormatBalance(info.balance, true))
+				local current = BrokerAnything:FormatNumber(info.currentValue, breakUpLargeNumbers)
+				local currentMax = BrokerAnything:FormatNumber(info.currentMax, breakUpLargeNumbers)
+				tooltip:AddDoubleLine(L["Reputation:"], info.color .. current .. "/" .. currentMax)
+				tooltip:AddDoubleLine(L["This session:"], BrokerAnything:FormatBalance(info.balance, true, breakUpLargeNumbers))
 				if (info.canToggleAtWar) then
 					tooltip:AddDoubleLine(L["At war:"], BrokerAnything:FormatBoolean(info.atWarWith))
 				end
@@ -447,13 +451,14 @@ function module:GetButtonText(factionId)
 
 	local text = "" .. info.color
 
+	local breakUpLargeNumbers = module.db.profile.ids[factionId].breakUpLargeNumbers
 	local showvalue = module.db.profile.ids[factionId].showValue
 	if showvalue then
-		text = text .. info.currentValue
+		text = text .. BrokerAnything:FormatNumber(info.currentValue, breakUpLargeNumbers)
 
 		local hideMax = module.db.profile.ids[factionId].hideMax
 		if not hideMax then
-			text = text .. "/" .. info.currentMax
+			text = text .. "/" .. BrokerAnything:FormatNumber(info.currentMax, breakUpLargeNumbers)
 		end
 	end
 	local percent
@@ -475,7 +480,7 @@ function module:GetButtonText(factionId)
 
 	local showBalance = module.db.profile.ids[factionId].showBalance
 	if showBalance and info.balance > 0 then
-		text = text .. BrokerAnything:FormatBalance(info.balance)
+		text = text .. BrokerAnything:FormatBalance(info.balance, nil, breakUpLargeNumbers)
 	end
 
 	return text

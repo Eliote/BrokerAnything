@@ -159,6 +159,7 @@ Ele será chamado como:
 	L["Reset session balance"] = "Redefinir o saldo da sessão"
 	L["Minimap Broker"] = "Broker do Minimapa"
 	L["Minimap broker configuration"] = "Configurações do Broker do minimapa"
+	L["Format large numbers"] = "Formatar números grandes"
 	--@end-debug@
 
 	return

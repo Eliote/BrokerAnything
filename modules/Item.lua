@@ -13,6 +13,7 @@ module.brokerTitle = L["Item"]
 
 local configVariables = {
 	showBalance = { title = L["Show balance"], default = true },
+	breakUpLargeNumbers = { title = L["Format large numbers"], default = true },
 	resetBalance = {
 		title = L["Reset session balance"],
 		type = "func",
@@ -26,14 +27,18 @@ local configVariables = {
 
 function module:UpdateBroker(brokerTable)
 	local itemCount = GetItemCount(brokerTable.id, true)
-
+	local breakUpLargeNumbers = module.db.profile.ids[brokerTable.id].breakUpLargeNumbers
 	local balance = ""
 	if (module.db.profile.ids[brokerTable.id].showBalance) then
-		balance = BrokerAnything:FormatBalance(GetItemCount(brokerTable.id, true) - brokerTable.sessionStart)
+		balance = BrokerAnything:FormatBalance(
+				GetItemCount(brokerTable.id, true) - brokerTable.sessionStart,
+				nil,
+				breakUpLargeNumbers
+		)
 	end
 
 	brokerTable.broker.value = itemCount
-	brokerTable.broker.text = itemCount .. balance
+	brokerTable.broker.text = BrokerAnything:FormatNumber(itemCount, breakUpLargeNumbers) .. balance
 end
 
 local function updateAll()
@@ -120,14 +125,15 @@ function module:AddBroker(itemID)
 
 				local bag = GetItemCount(itemID, false)
 				local total = GetItemCount(itemID, true)
+				local breakUpLargeNumbers = module.db.profile.ids[brokerTable.id].breakUpLargeNumbers
 
 				tooltip:AddDoubleLine(
 						L["This session:"],
-						BrokerAnything:FormatBalance(total - brokerTable.sessionStart, true)
+						BrokerAnything:FormatBalance(total - brokerTable.sessionStart, true, breakUpLargeNumbers)
 				)
-				tooltip:AddDoubleLine(L["Bag:"], Colors.WHITE .. bag)
-				tooltip:AddDoubleLine(L["Bank:"], Colors.WHITE .. (total - bag))
-				tooltip:AddDoubleLine(L["Total:"], Colors.WHITE .. total)
+				tooltip:AddDoubleLine(L["Bag:"], Colors.WHITE .. BrokerAnything:FormatNumber(bag, breakUpLargeNumbers))
+				tooltip:AddDoubleLine(L["Bank:"], Colors.WHITE .. BrokerAnything:FormatNumber((total - bag), breakUpLargeNumbers))
+				tooltip:AddDoubleLine(L["Total:"], Colors.WHITE ..  BrokerAnything:FormatNumber(total, breakUpLargeNumbers))
 
 				tooltip:Show()
 			end,

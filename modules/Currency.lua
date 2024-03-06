@@ -18,6 +18,7 @@ module.brokerTitle = L["Currency"]
 
 local configVariables = {
 	showBalance = { title = L["Show balance"], default = true },
+	breakUpLargeNumbers = { title = L["Format large numbers"], default = true },
 	resetBalance = {
 		title = L["Reset session balance"],
 		type = "func",
@@ -33,14 +34,15 @@ local configVariables = {
 function module:UpdateBroker(brokerTable)
 	local info = GetCurrencyInfo(brokerTable.id)
 	local currencyAmount = info and info.quantity
+	local breakUpLargeNumbers = module.db.profile.ids[brokerTable.id].breakUpLargeNumbers
 
 	local balance = ""
 	if (module.db.profile.ids[brokerTable.id].showBalance) then
-		balance = BrokerAnything:FormatBalance(currencyAmount - brokerTable.sessionStart)
+		balance = BrokerAnything:FormatBalance(currencyAmount - brokerTable.sessionStart, nil, breakUpLargeNumbers)
 	end
 
 	brokerTable.broker.value = currencyAmount
-	brokerTable.broker.text = currencyAmount .. balance
+	brokerTable.broker.text = BrokerAnything:FormatNumber(currencyAmount, breakUpLargeNumbers) .. balance
 end
 
 local function updateAll()
@@ -125,13 +127,14 @@ function module:AddBroker(currencyId)
 			tooltip:AddLine(" ")
 			tooltip:AddLine(Colors.WHITE .. "[BrokerAnything]")
 
+			local breakUpLargeNumbers = module.db.profile.ids[brokerTable.id].breakUpLargeNumbers
 			tooltip:AddDoubleLine(
 					L["This session:"],
-					BrokerAnything:FormatBalance(amount - brokerTable.sessionStart, true)
+					BrokerAnything:FormatBalance(amount - brokerTable.sessionStart, true, breakUpLargeNumbers)
 			)
-			tooltip:AddDoubleLine(L["Current:"], Colors.WHITE .. amount)
+			tooltip:AddDoubleLine(L["Current:"], Colors.WHITE .. BrokerAnything:FormatNumber(amount, breakUpLargeNumbers))
 			if (maximum > 0) then
-				tooltip:AddDoubleLine(L["Maximum:"], Colors.WHITE .. maximum)
+				tooltip:AddDoubleLine(L["Maximum:"], Colors.WHITE .. BrokerAnything:FormatNumber(maximum, breakUpLargeNumbers))
 			end
 
 			tooltip:Show()

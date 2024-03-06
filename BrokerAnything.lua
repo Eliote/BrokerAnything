@@ -86,18 +86,18 @@ function BrokerAnything:OnInitialize()
 	end)
 end
 
-function BrokerAnything:FormatBalance(value, tooltip)
+function BrokerAnything:FormatBalance(value, tooltip, breakUpLargeNumbers)
 	local text = ""
 	if value > 0 then
-		text = Colors.GREEN .. value .. "|r"
+		text = Colors.GREEN .. BrokerAnything:FormatNumber(value, breakUpLargeNumbers) .. "|r"
 	end
 	if value < 0 then
-		text = Colors.RED .. value .. "|r"
+		text = Colors.RED .. BrokerAnything:FormatNumber(value, breakUpLargeNumbers) .. "|r"
 	end
 
 	if (tooltip) then
 		if value == 0 then
-			text = Colors.WHITE .. value .. "|r"
+			text = Colors.WHITE .. BrokerAnything:FormatNumber(value, breakUpLargeNumbers) .. "|r"
 		end
 		return text
 	else
@@ -106,6 +106,16 @@ function BrokerAnything:FormatBalance(value, tooltip)
 		end
 		return " " .. Colors.WHITE .. "[" .. text .. Colors.WHITE .. "]"
 	end
+end
+
+function BrokerAnything:FormatNumber(value, breakUpLargeNumbers)
+	if (value == nil) then
+		return "0"
+	end
+	if (breakUpLargeNumbers) then
+		return BreakUpLargeNumbers(value)
+	end
+	return value
 end
 
 local registeredClicks = {}
