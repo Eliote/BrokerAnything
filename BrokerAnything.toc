@@ -1,6 +1,6 @@
-## Interface: 100205
-## Interface-Classic: 11501
-## Interface-Wrath: 30403
+## Interface: 100207
+## Interface-Classic: 11502
+## Interface-Cata: 40400
 ## Title: BrokerAnything
 ## Notes: Create a data broker for any ID
 ## Author: Eliote
