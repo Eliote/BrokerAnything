@@ -71,12 +71,15 @@ local function addCategory(name)
 	table.insert(TITAN_PANEL_BUTTONS_PLUGIN_CATEGORY, name)
 end
 
+local visitedPlugin = {}
+
 local TitanUtils_GetPluginOriginal = TitanUtils_GetPlugin
 TitanUtils_GetPlugin = function(id, ...)
 	local plugin = TitanUtils_GetPluginOriginal(id, ...)
 	if (not plugin) then return end
 
-	if (ElioteUtils.empty(plugin.category)) then
+	if (visitedPlugin[id] == nil) then
+		visitedPlugin[id] = true
 		for _, baModule in BrokerAnything:IterateModules() do
 			if (baModule.brokers) then
 				for _, brokerTable in pairs(baModule.brokers) do
