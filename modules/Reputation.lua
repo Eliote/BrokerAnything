@@ -263,6 +263,7 @@ function module:AddBroker(factionId)
 				configPath = { "reputation", tostring(factionId) },
 				category = L["Reputation"],
 			},
+			category = L["Reputation"],
 			OnTooltipShow = function(tooltip)
 				if not brokers[factionId] then
 					return

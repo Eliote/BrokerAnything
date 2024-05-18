@@ -71,27 +71,11 @@ local function addCategory(name)
 	table.insert(TITAN_PANEL_BUTTONS_PLUGIN_CATEGORY, name)
 end
 
-local visitedPlugin = {}
-
-local TitanUtils_GetPluginOriginal = TitanUtils_GetPlugin
-TitanUtils_GetPlugin = function(id, ...)
-	local plugin = TitanUtils_GetPluginOriginal(id, ...)
-	if (not plugin) then return end
-
-	if (visitedPlugin[id] == nil) then
-		visitedPlugin[id] = true
-		for _, baModule in BrokerAnything:IterateModules() do
-			if (baModule.brokers) then
-				for _, brokerTable in pairs(baModule.brokers) do
-					if (brokerTable.broker.type == "data source" and brokerTable.broker.id == id) then
-						plugin.category = brokerTable.broker.brokerAnything.category
-						addCategory(plugin.category)
-						return plugin
-					end
-				end
-			end
-		end
+-- This is working for now as the order doesn't matter. If that changes, we can hook [TitanLDBCreateObject] instead.
+local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
+local function OnBrokerAdded(event, name, dataobj)
+	if (dataobj.type == "data source" and dataobj.brokerAnything and dataobj.brokerAnything.category) then
+		addCategory(dataobj.brokerAnything.category)
 	end
-
-	return plugin
 end
+ldb.RegisterCallback("BA_OnBrokerAdded_Callback", "LibDataBroker_DataObjectCreated", OnBrokerAdded)

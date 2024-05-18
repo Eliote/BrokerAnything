@@ -117,6 +117,7 @@ function module:AddBroker(itemID)
 				configPath = { "item", tostring(itemID) },
 				category = L["Item"],
 			},
+			category = L["Item"],
 			OnTooltipShow = function(tooltip)
 				tooltip:SetHyperlink(itemLink)
 

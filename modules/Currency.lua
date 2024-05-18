@@ -114,6 +114,7 @@ function module:AddBroker(currencyId)
 			configPath = { "currency", tostring(currencyId) },
 			category = L["Currency"],
 		},
+		category =  L["Currency"],
 		OnTooltipShow = function(tooltip)
 			local info = GetCurrencyInfo(currencyId)
 			local amount, maximum = info.quantity, info.maxQuantity

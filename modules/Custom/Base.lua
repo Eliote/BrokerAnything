@@ -149,6 +149,7 @@ function module:EnableBroker(name)
 			configPath = { "custom", self:GetOptionName(name) },
 			category = L["Custom"],
 		},
+		category = L["Custom"],
 		OnTooltipShow = function(tooltip) runScript(brokerInfo.tooltipScript, name .. "_Tooltip", tooltip, broker) end,
 		OnClick = function(frame, buttonName) runScript(brokerInfo.clickScript, name .. "_Click", frame, buttonName, broker) end,
 		tocname = ADDON_NAME
