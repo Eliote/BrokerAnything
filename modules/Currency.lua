@@ -205,7 +205,7 @@ local options = {
 				set = function(info, value)
 					module.db.profile.ids[value] = nil
 					module:RemoveBroker(value)
-					BrokerAnything:print(L["Reload UI to take effect!"])
+					BrokerAnything:Print(L["Reload UI to take effect!"])
 				end,
 				get = function(info) end,
 				sorting = function()
