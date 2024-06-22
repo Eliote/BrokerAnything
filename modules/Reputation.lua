@@ -29,6 +29,13 @@ GetFriendshipReputation = GetFriendshipReputation or nop
 local IsMajorFaction = C_Reputation.IsMajorFaction or nop
 local GetMajorFactionData = C_MajorFactions and C_MajorFactions.GetMajorFactionData and C_MajorFactions.GetMajorFactionData or nop
 local HasMaximumRenown = C_MajorFactions and C_MajorFactions.HasMaximumRenown and C_MajorFactions.HasMaximumRenown or nop
+local GetFactionInfoByID = GetFactionInfoByID or function(factionID)
+	local data = C_Reputation.GetFactionDataByID(factionID)
+	if not data then return nil end
+	return data.name, data.description, data.reaction, data.currentReactionThreshold, data.nextReactionThreshold,
+	data.currentStanding, data.atWarWith, data.canToggleAtWar, data.isHeader, data.isCollapsed, data.isHeaderWithRep,
+	data.isWatched, data.isChild, data.factionID, data.hasBonusRepGain
+end
 
 local brokers = {}
 module.brokers = brokers
@@ -65,8 +72,6 @@ local icons = {
 	"inv_misc_notescript1a", "inv_misc_notescript1b", "inv_misc_notescript1c", "inv_misc_notescript1d", "inv_misc_notescript1e",
 	"inv_misc_notescript2a", "inv_misc_notescript2b", "inv_misc_notescript2c", "inv_misc_notescript2d", "inv_misc_notescript2e"
 }
-
-local GetFactionInfoByID = GetFactionInfoByID
 
 function module:UpdateBroker(brokerTable)
 	local text = module:GetButtonText(brokerTable.id)

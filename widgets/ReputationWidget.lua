@@ -7,7 +7,15 @@ local ElioteUtils = LibStub("LibElioteUtils-1.0")
 local empty = ElioteUtils.empty
 local startsWith = ElioteUtils.startsWith
 
-local GetFactionInfo = GetFactionInfo
+local GetFactionInfo = function(factionIndex)
+	if GetFactionInfo then
+		local name, _, _, _, _, _, _, _, _, _, _, _, _, factionID = GetFactionInfo(factionIndex)
+		return name, factionID
+	end
+	local t = C_Reputation.GetFactionDataByIndex(factionIndex)
+	if not t then return nil end
+	return t.name, t.factionID
+end
 
 function Predictor:Initialize()
 	self.Initialize = nil
@@ -16,7 +24,7 @@ end
 
 function Predictor:Cache(factionIndex)
 	if (not factionIndex) then return end
-	local name, _, _, _, _, _, _, _, _, _, _, _, _, factionId = GetFactionInfo(factionIndex)
+	local name, factionId = GetFactionInfo(factionIndex)
 	if (not empty(name) and factionId) then
 		self.cache[factionId] = name
 	end
