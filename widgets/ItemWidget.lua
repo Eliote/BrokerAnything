@@ -6,7 +6,7 @@ local getTexture = ElioteUtils.getTexture
 
 local tonumber = tonumber
 local Item = Item
-local GetItemInfo = GetItemInfo
+local GetItemInfo = (C_Item and C_Item.GetItemInfo) or GetItemInfo
 
 function Predictor:Initialize()
 	self.Initialize = nil

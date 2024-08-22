@@ -1,7 +1,7 @@
 --[[-----------------------------------------------------------------------------
 EditBox Widget
 -------------------------------------------------------------------------------]]
-local Type, Version = "LibAdvancedIconSelector-EditBox-Widget", 2
+local Type, Version = "LibAdvancedIconSelector-EditBox-Widget", 3
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -11,8 +11,9 @@ local tostring, pairs = tostring, pairs
 -- WoW APIs
 local PlaySound = PlaySound
 local GetCursorInfo, ClearCursor = GetCursorInfo, ClearCursor
-local GetItemInfo, GetSpellTexture, GetMacroInfo = GetItemInfo, GetSpellTexture, GetMacroInfo
+local GetSpellTexture, GetMacroInfo = GetSpellTexture, GetMacroInfo
 local CreateFrame, UIParent = CreateFrame, UIParent
+local GetItemInfo = (C_Item and C_Item.GetItemInfo) or GetItemInfo
 
 -- Global vars/functions that we don't upvalue since they might get hooked, or upgraded
 -- List them here for Mikk's FindGlobals script

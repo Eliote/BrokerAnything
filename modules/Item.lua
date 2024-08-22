@@ -7,6 +7,9 @@ local module = BrokerAnything:NewModule("ItemModule", "AceEvent-3.0")
 local Colors = BrokerAnything.Colors
 local ElioteUtils = LibStub("LibElioteUtils-1.0")
 
+local GetItemInfo = (C_Item and C_Item.GetItemInfo) or GetItemInfo
+local GetItemCount = (C_Item and C_Item.GetItemCount) or GetItemCount
+
 local brokers = {}
 module.brokers = brokers
 module.brokerTitle = L["Item"]
