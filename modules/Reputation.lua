@@ -73,6 +73,17 @@ local icons = {
 	"inv_misc_notescript2a", "inv_misc_notescript2b", "inv_misc_notescript2c", "inv_misc_notescript2d", "inv_misc_notescript2e"
 }
 
+local function MajorFactionTexture(majorFactionData)
+	local kit = majorFactionData.textureKit
+	if (not kit) then return nil end
+
+	if (majorFactionData.expansionID >= 10) then
+		-- yes, the new ones are in plural "MajorFaction[s]" ¯\_(ツ)_/¯
+		return ([[Interface\Icons\UI_MajorFactions_%s]]):format(kit)
+	end
+	return ([[Interface\Icons\UI_MajorFaction_%s]]):format(kit)
+end
+
 function module:UpdateBroker(brokerTable)
 	local text = module:GetButtonText(brokerTable.id)
 
@@ -244,7 +255,7 @@ function module:AddBroker(factionId)
 		local data = GetMajorFactionData(factionId)
 		local isCapped = HasMaximumRenown(factionId)
 		local current = isCapped and data.renownLevelThreshold or data.renownReputationEarned or 0
-		icon = ([[Interface\Icons\UI_MajorFaction_%s]]):format(data.textureKit)
+		icon = MajorFactionTexture(data)
 		sessionStart = {
 			startLvl = data.renownLevel,
 			[data.renownLevel] = { start = current, max = data.renownLevelThreshold }
