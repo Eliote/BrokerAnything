@@ -31,6 +31,29 @@ local configVariables = {
 	}
 }
 
+local function ColorForCurrencyAmount(info)
+	if (not info) then return Colors.WHITE end
+	if (info.canEarnPerWeek and info.quantityEarnedThisWeek == info.maxWeeklyQuantity) then
+		return Colors.RED
+	end
+	local current = info.quantity
+	local max = info.maxQuantity
+	if (current and current > 0 and max and max > 0) then
+		local percent = current / max
+		if (percent >= 0.99) then
+			return Colors.RED
+		end
+		if (percent >= 0.75) then
+			return Colors.YELLOW
+		end
+	end
+	return Colors.WHITE
+end
+
+local function FormatAmount(info, breakUpLargeNumbers)
+	return ColorForCurrencyAmount(info) .. BrokerAnything:FormatNumber(info.quantity, breakUpLargeNumbers) .. "|r"
+end
+
 function module:UpdateBroker(brokerTable)
 	local info = GetCurrencyInfo(brokerTable.id)
 	local currencyAmount = info and info.quantity
@@ -42,7 +65,7 @@ function module:UpdateBroker(brokerTable)
 	end
 
 	brokerTable.broker.value = currencyAmount
-	brokerTable.broker.text = BrokerAnything:FormatNumber(currencyAmount, breakUpLargeNumbers) .. balance
+	brokerTable.broker.text = FormatAmount(info, breakUpLargeNumbers) .. balance
 end
 
 local function updateAll()
@@ -133,9 +156,13 @@ function module:AddBroker(currencyId)
 					L["This session:"],
 					BrokerAnything:FormatBalance(amount - brokerTable.sessionStart, true, breakUpLargeNumbers)
 			)
-			tooltip:AddDoubleLine(L["Current:"], Colors.WHITE .. BrokerAnything:FormatNumber(amount, breakUpLargeNumbers))
+			tooltip:AddDoubleLine(L["Current:"], FormatAmount(info, breakUpLargeNumbers))
 			if (maximum > 0) then
 				tooltip:AddDoubleLine(L["Maximum:"], Colors.WHITE .. BrokerAnything:FormatNumber(maximum, breakUpLargeNumbers))
+			end
+			if (info.canEarnPerWeek) then
+				tooltip:AddDoubleLine(L["Weekly:"], Colors.WHITE .. BrokerAnything:FormatNumber(info.maxWeeklyQuantity, breakUpLargeNumbers))
+				tooltip:AddDoubleLine(L["This week:"], Colors.WHITE .. BrokerAnything:FormatNumber(info.quantityEarnedThisWeek, breakUpLargeNumbers))
 			end
 
 			tooltip:Show()
