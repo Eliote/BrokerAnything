@@ -399,11 +399,10 @@ function module:GetStandardizeValues(standingId, barValue, bottomValue, topValue
 		local data = GetMajorFactionData(factionId)
 		local isCapped = HasMaximumRenown(factionId)
 		local current = isCapped and data.renownLevelThreshold or data.renownReputationEarned or 0
-		local standingTextRaw = (RENOWN_LEVEL_LABEL .. data.renownLevel)
-		local standingText = " (" .. standingTextRaw .. ")"
+		local standingText = (RENOWN_LEVEL_LABEL .. data.renownLevel)
 		local session = module:GetSessionBalanceMajorFaction(factionId, data)
 		local hasRewardPending = C_Reputation.IsFactionParagon(factionId) and select(4, C_Reputation.GetFactionParagonInfo(factionId))
-		return current, data.renownLevelThreshold, color, standingText, hasRewardPending, session, "major", nil, standingTextRaw
+		return current, data.renownLevelThreshold, color, standingText, hasRewardPending, session, "major", nil, true
 	end
 
 	if (standingId == nil) then
@@ -413,32 +412,32 @@ function module:GetStandardizeValues(standingId, barValue, bottomValue, topValue
 	if (C_Reputation.IsFactionParagon(factionId)) then
 		local color = "|cFF00FFFF"
 		local currentValue, threshold, _, hasRewardPending = C_Reputation.GetFactionParagonInfo(factionId);
-		local standingText = " (" .. GetStandingIdText(standingId) .. ")"
+		local standingText = GetStandingIdText(standingId)
 		if hasRewardPending then
 			standingText = standingText .. "*"
 		end
 		local session = module:GetSessionBalanceRep(factionId, barValue)
-		return mod(currentValue, threshold), threshold, color, standingText, hasRewardPending, session, "paragon", nil, GetStandingIdText(standingId)
+		return mod(currentValue, threshold), threshold, color, standingText, hasRewardPending, session, "paragon", nil, true
 	end
 
 	local friendID, friendRep, _, _, friendText, _, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionId)
 	if (friendID) then
 		local color = getStandColor(standingId)
-		local standingText = " (" .. friendTextLevel .. ")"
+		local standingText = friendTextLevel
 		local maximun, current = 1, 1
 		if (nextFriendThreshold) then
 			maximun, current = nextFriendThreshold - friendThreshold, friendRep - friendThreshold
 		end
 		local session = module:GetSessionBalanceRep(factionId, friendRep)
-		return current, maximun, color, standingText, nil, session, "friend", friendText, friendTextLevel
+		return current, maximun, color, standingText, nil, session, "friend", friendText, true
 	end
 
 	local color = getStandColor(standingId)
-	local standingText = " (" .. GetStandingIdText(standingId) .. ")"
+	local standingText = GetStandingIdText(standingId)
 	local current = barValue - bottomValue
 	local maximun = topValue - bottomValue
 	local session = module:GetSessionBalanceRep(factionId, barValue)
-	return current, maximun, color, standingText, nil, session, "reputation", nil, nil
+	return current, maximun, color, standingText, nil, session, "reputation", nil, nil, false
 end
 
 function module:GetRepInfo(factionId)
@@ -447,7 +446,7 @@ function module:GetRepInfo(factionId)
 		return nil
 	end
 
-	local value, max, color, standingText, hasRewardPending, balance, repType, friendText, renownLevel = module:GetStandardizeValues(
+	local value, max, color, standingText, hasRewardPending, balance, repType, friendText, isRenown = module:GetStandardizeValues(
 			standingID, barValue, bottomValue, topValue, factionId
 	)
 
@@ -464,7 +463,7 @@ function module:GetRepInfo(factionId)
 		repType = repType,
 		atWarWith = atWarWith,
 		canToggleAtWar = canToggleAtWar,
-		renownLevel = renownLevel,
+		isRenown = isRenown,
 	}
 end
 
@@ -475,10 +474,6 @@ function module:GetButtonText(factionId)
 	end
 
 	local text = "" .. info.color
-
-	if (info.renownLevel) then
-		text = text .. "<" .. info.renownLevel .. "> "
-	end
 
 	local breakUpLargeNumbers = module.db.profile.ids[factionId].breakUpLargeNumbers
 	local showvalue = module.db.profile.ids[factionId].showValue
@@ -501,6 +496,10 @@ function module:GetButtonText(factionId)
 		text = text .. " (" .. percent .. "%)"
 	else
 		text = text .. percent .. "%"
+	end
+
+	if (info.isRenown) then
+		text = text .. " <" .. info.standingText .. ">"
 	end
 
 	if info.hasRewardPending then
