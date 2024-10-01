@@ -1,4 +1,4 @@
-local Type, Version = "LuaEditBox", 8
+local Type, Version = "LuaEditBox", 9
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then
 	return
@@ -238,7 +238,7 @@ local function OnTextChanged(self, userInput, ...)
 		end
 		UpdateLineNumbers(self)
 	else
-		if widget.textHistory.time == 0 then
+		if widget.textHistory and widget.textHistory.time == 0 then
 			widget.textHistory:Add(text, 0, true)
 		end
 	end

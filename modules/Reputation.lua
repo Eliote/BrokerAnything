@@ -393,10 +393,11 @@ function module:GetStandardizeValues(standingId, barValue, bottomValue, topValue
 		local data = GetMajorFactionData(factionId)
 		local isCapped = HasMaximumRenown(factionId)
 		local current = isCapped and data.renownLevelThreshold or data.renownReputationEarned or 0
-		local standingText = " (" .. (RENOWN_LEVEL_LABEL .. data.renownLevel) .. ")"
+		local standingTextRaw = (RENOWN_LEVEL_LABEL .. data.renownLevel)
+		local standingText = " (" .. standingTextRaw .. ")"
 		local session = module:GetSessionBalanceMajorFaction(factionId, data)
 		local hasRewardPending = C_Reputation.IsFactionParagon(factionId) and select(4, C_Reputation.GetFactionParagonInfo(factionId))
-		return current, data.renownLevelThreshold, color, standingText, hasRewardPending, session, "major", nil
+		return current, data.renownLevelThreshold, color, standingText, hasRewardPending, session, "major", nil, standingTextRaw
 	end
 
 	if (standingId == nil) then
@@ -440,7 +441,7 @@ function module:GetRepInfo(factionId)
 		return nil
 	end
 
-	local value, max, color, standingText, hasRewardPending, balance, repType, friendText = module:GetStandardizeValues(
+	local value, max, color, standingText, hasRewardPending, balance, repType, friendText, renownLevel = module:GetStandardizeValues(
 			standingID, barValue, bottomValue, topValue, factionId
 	)
 
@@ -457,6 +458,7 @@ function module:GetRepInfo(factionId)
 		repType = repType,
 		atWarWith = atWarWith,
 		canToggleAtWar = canToggleAtWar,
+		renownLevel = renownLevel,
 	}
 end
 
@@ -467,6 +469,10 @@ function module:GetButtonText(factionId)
 	end
 
 	local text = "" .. info.color
+
+	if (info.renownLevel) then
+		text = text .. "<" .. info.renownLevel .. "> "
+	end
 
 	local breakUpLargeNumbers = module.db.profile.ids[factionId].breakUpLargeNumbers
 	local showvalue = module.db.profile.ids[factionId].showValue
@@ -492,7 +498,7 @@ function module:GetButtonText(factionId)
 	end
 
 	if info.hasRewardPending then
-		text = "*" + text
+		text = "*" .. text
 	end
 
 	local showBalance = module.db.profile.ids[factionId].showBalance
