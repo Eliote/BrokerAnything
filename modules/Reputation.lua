@@ -243,13 +243,14 @@ function module:AddBroker(factionId)
 
 	local sessionStart = repValue
 	local friendID, friendRep, _, _, _, friendTexture = GetFriendshipReputation(factionId)
+	local icon
 	if (friendID) then
 		sessionStart = friendRep
+		icon = friendTexture
 	end
 
 	local brokerName = "BrokerAnything_Reputation_" .. factionId
 	local name = repName .. "|r"
-	local icon = friendTexture or (module.db.profile.ids[factionId] and module.db.profile.ids[factionId].icon)
 
 	if (IsMajorFaction(factionId)) then
 		local data = GetMajorFactionData(factionId)
@@ -262,7 +263,12 @@ function module:AddBroker(factionId)
 		}
 	end
 
-	if not icon then
+	local customIcon = module.db.profile.ids[factionId] and module.db.profile.ids[factionId].icon
+	if (customIcon and customIcon ~= "") then
+		icon = customIcon
+	end
+
+	if (not icon or icon == "") then
 		icon = getRandomIcon()
 	end
 
