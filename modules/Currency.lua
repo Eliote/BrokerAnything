@@ -318,8 +318,8 @@ function module:RemoveOption(id)
 	options.currency.args[tostring(id)] = nil
 end
 
-function module:OnOptionChanged()
-	module:UpdateBroker(brokers[self])
+function module.OnOptionChanged(id)
+	module:UpdateBroker(brokers[id])
 end
 
 --- this will NOT remove the broker from the database

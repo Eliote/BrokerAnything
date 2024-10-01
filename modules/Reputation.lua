@@ -411,8 +411,8 @@ function module:GetStandardizeValues(standingId, barValue, bottomValue, topValue
 		if hasRewardPending then
 			standingText = standingText .. "*"
 		end
-		local session = module:GetSessionBalanceRep(standingId, barValue)
-		return mod(currentValue, threshold), threshold, color, standingText, hasRewardPending, session, "paragon", nil
+		local session = module:GetSessionBalanceRep(factionId, barValue)
+		return mod(currentValue, threshold), threshold, color, standingText, hasRewardPending, session, "paragon", nil, GetStandingIdText(standingId)
 	end
 
 	local friendID, friendRep, _, _, friendText, _, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionId)
@@ -423,16 +423,16 @@ function module:GetStandardizeValues(standingId, barValue, bottomValue, topValue
 		if (nextFriendThreshold) then
 			maximun, current = nextFriendThreshold - friendThreshold, friendRep - friendThreshold
 		end
-		local session = module:GetSessionBalanceRep(standingId, friendRep)
-		return current, maximun, color, standingText, nil, session, "friend", friendText
+		local session = module:GetSessionBalanceRep(factionId, friendRep)
+		return current, maximun, color, standingText, nil, session, "friend", friendText, friendTextLevel
 	end
 
 	local color = getStandColor(standingId)
 	local standingText = " (" .. GetStandingIdText(standingId) .. ")"
 	local current = barValue - bottomValue
 	local maximun = topValue - bottomValue
-	local session = module:GetSessionBalanceRep(standingId, barValue)
-	return current, maximun, color, standingText, nil, session, "reputation", nil
+	local session = module:GetSessionBalanceRep(factionId, barValue)
+	return current, maximun, color, standingText, nil, session, "reputation", nil, nil
 end
 
 function module:GetRepInfo(factionId)
@@ -584,6 +584,10 @@ end
 
 function module:RemoveOption(id)
 	options.reputation.args[tostring(id)] = nil
+end
+
+function module.OnOptionChanged(id)
+	module:UpdateBroker(brokers[id])
 end
 
 --- this will NOT remove the broker from the database
