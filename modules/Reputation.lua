@@ -27,6 +27,7 @@ end
 GetFriendshipReputation = GetFriendshipReputation or nop
 
 local IsMajorFaction = C_Reputation.IsMajorFaction or nop
+local IsFactionParagon = C_Reputation.IsFactionParagon or nop
 local GetMajorFactionData = C_MajorFactions and C_MajorFactions.GetMajorFactionData and C_MajorFactions.GetMajorFactionData or nop
 local HasMaximumRenown = C_MajorFactions and C_MajorFactions.HasMaximumRenown and C_MajorFactions.HasMaximumRenown or nop
 local GetFactionInfoByID = GetFactionInfoByID or function(factionID)
@@ -401,7 +402,7 @@ function module:GetStandardizeValues(standingId, barValue, bottomValue, topValue
 		local current = isCapped and data.renownLevelThreshold or data.renownReputationEarned or 0
 		local standingText = (RENOWN_LEVEL_LABEL .. data.renownLevel)
 		local session = module:GetSessionBalanceMajorFaction(factionId, data)
-		local hasRewardPending = C_Reputation.IsFactionParagon(factionId) and select(4, C_Reputation.GetFactionParagonInfo(factionId))
+		local hasRewardPending = IsFactionParagon(factionId) and select(4, C_Reputation.GetFactionParagonInfo(factionId))
 		return current, data.renownLevelThreshold, color, standingText, hasRewardPending, session, "major", nil, true
 	end
 
@@ -409,7 +410,7 @@ function module:GetStandardizeValues(standingId, barValue, bottomValue, topValue
 		return "0", "0", "|cFFFF0000", "??? - " .. (factionId .. "?")
 	end
 
-	if (C_Reputation.IsFactionParagon(factionId)) then
+	if (IsFactionParagon(factionId)) then
 		local color = "|cFF00FFFF"
 		local currentValue, threshold, _, hasRewardPending = C_Reputation.GetFactionParagonInfo(factionId);
 		local standingText = GetStandingIdText(standingId)
