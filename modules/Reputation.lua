@@ -45,7 +45,7 @@ module.brokerTitle = L["Reputation"]
 ---@type table<string, SimpleConfigTable>
 local configVariables = {
 	showValue = { title = L["Show value"], default = true },
-	hideMax = { title = L["Hide maximun"], default = true },
+	hideMax = { title = L["Hide maximum"], default = true },
 	showBalance = { title = L["Show balance"], default = true },
 	breakUpLargeNumbers = { title = L["Format large numbers"], default = true },
 	icon = { title = L["Icon"], type = "icon" },
@@ -425,20 +425,20 @@ function module:GetStandardizeValues(standingId, barValue, bottomValue, topValue
 	if (friendID) then
 		local color = getStandColor(standingId)
 		local standingText = friendTextLevel
-		local maximun, current = 1, 1
+		local max, current = 1, 1
 		if (nextFriendThreshold) then
-			maximun, current = nextFriendThreshold - friendThreshold, friendRep - friendThreshold
+			max, current = nextFriendThreshold - friendThreshold, friendRep - friendThreshold
 		end
 		local session = module:GetSessionBalanceRep(factionId, friendRep)
-		return current, maximun, color, standingText, nil, session, "friend", friendText, true
+		return current, max, color, standingText, nil, session, "friend", friendText, true
 	end
 
 	local color = getStandColor(standingId)
 	local standingText = GetStandingIdText(standingId)
 	local current = barValue - bottomValue
-	local maximun = topValue - bottomValue
+	local max = topValue - bottomValue
 	local session = module:GetSessionBalanceRep(factionId, barValue)
-	return current, maximun, color, standingText, nil, session, "reputation", nil, nil, false
+	return current, max, color, standingText, nil, session, "reputation", nil, nil, false
 end
 
 function module:GetRepInfo(factionId)
