@@ -37,6 +37,13 @@ local GetFactionInfoByID = GetFactionInfoByID or function(factionID)
 	data.currentStanding, data.atWarWith, data.canToggleAtWar, data.isHeader, data.isCollapsed, data.isHeaderWithRep,
 	data.isWatched, data.isChild, data.factionID, data.hasBonusRepGain
 end
+local GetFriendshipReputationRanks = GetFriendshipReputationRanks or function(factionId)
+	if (C_GossipInfo and C_GossipInfo.GetFriendshipReputationRanks) then
+		local data = C_GossipInfo.GetFriendshipReputationRanks(factionId)
+		if not data then return nil end
+		return data.currentLevel, data.maxLevel
+	end
+end
 
 local brokers = {}
 module.brokers = brokers
@@ -54,8 +61,7 @@ local configVariables = {
 		type = "func",
 		func = function(id)
 			local brokerTable = brokers[id]
-			local _, _, _, _, _, repValue = GetFactionInfoByID(id)
-			brokerTable.sessionStart = repValue
+			brokerTable.sessionStart = nil
 			module:UpdateBroker(brokerTable)
 		end
 	}
@@ -212,10 +218,7 @@ function module:MAJOR_FACTION_RENOWN_LEVEL_CHANGED(_, factionId, newRenownLevel,
 	if (brokers[factionId].sessionStart) then
 		brokers[factionId].sessionStart[newRenownLevel] = { start = 0, max = data.renownLevelThreshold }
 	else
-		brokers[factionId].sessionStart = {
-			startLvl = data.renownLevel,
-			[data.renownLevel] = { start = 0, max = data.renownLevelThreshold }
-		}
+		module:InitSessionMajorFaction(brokers[factionId], data)
 	end
 	updateAll()
 end
@@ -242,26 +245,25 @@ function module:AddBroker(factionId)
 		return
 	end
 
-	local sessionStart = repValue
-	local friendID, friendRep, _, _, _, friendTexture = GetFriendshipReputation(factionId)
-	local icon
-	if (friendID) then
-		sessionStart = friendRep
-		icon = friendTexture
-	end
-
 	local brokerName = "BrokerAnything_Reputation_" .. factionId
 	local name = repName .. "|r"
 
+	local brokerTable = {
+		id = factionId,
+	}
+
+	local friendID, friendRep, _, _, _, friendTexture = GetFriendshipReputation(factionId)
+	local icon
 	if (IsMajorFaction(factionId)) then
 		local data = GetMajorFactionData(factionId)
-		local isCapped = HasMaximumRenown(factionId)
-		local current = isCapped and data.renownLevelThreshold or data.renownReputationEarned or 0
 		icon = MajorFactionTexture(data)
-		sessionStart = {
-			startLvl = data.renownLevel,
-			[data.renownLevel] = { start = current, max = data.renownLevelThreshold }
-		}
+		module:InitSessionMajorFaction(brokerTable, data)
+	elseif (friendID) then
+		local rankingCurrent = GetFriendshipReputationRanks(factionId)
+		module:InitSessionBalanceRep(brokerTable, friendRep, rankingCurrent)
+		icon = friendTexture
+	else
+		module:InitSessionBalanceRep(brokerTable, friendRep)
 	end
 
 	local customIcon = module.db.profile.ids[factionId] and module.db.profile.ids[factionId].icon
@@ -273,70 +275,70 @@ function module:AddBroker(factionId)
 		icon = getRandomIcon()
 	end
 
-	local brokerTable = {
-		id = factionId,
-		sessionStart = sessionStart,
-		broker = LibStub("LibDataBroker-1.1"):NewDataObject(brokerName, {
-			id = brokerName,
-			type = "data source",
-			icon = icon or "Interface\\Icons\\INV_MISC_NOTE_03",
-			label = name,
-			brokerAnything = {
-				name = Colors.WHITE .. name,
-				configPath = { "reputation", tostring(factionId) },
-				category = L["Reputation"],
-			},
+	brokerTable.broker = LibStub("LibDataBroker-1.1"):NewDataObject(brokerName, {
+		id = brokerName,
+		type = "data source",
+		icon = icon or "Interface\\Icons\\INV_MISC_NOTE_03",
+		label = name,
+		brokerAnything = {
+			name = Colors.WHITE .. name,
+			configPath = { "reputation", tostring(factionId) },
 			category = L["Reputation"],
-			OnTooltipShow = function(tooltip)
-				if not brokers[factionId] then
-					return
-				end
+		},
+		category = L["Reputation"],
+		OnTooltipShow = function(tooltip)
+			if not brokers[factionId] then
+				return
+			end
 
-				local info = module:GetRepInfo(factionId)
-				if (not info) then
-					return
-				end
+			local info = module:GetRepInfo(factionId)
+			if (not info) then
+				return
+			end
 
-				tooltip:AddLine(Colors.WHITE .. info.name)
-				tooltip:AddLine(info.description, nil, nil, nil, true)
-				if (info.repType == "friend") then
-					if (info.description and info.description ~= "") then
-						tooltip:AddLine(" ")
+			tooltip:AddLine(Colors.WHITE .. info.name)
+			tooltip:AddLine(info.description, nil, nil, nil, true)
+			if (info.repType == "friend") then
+				if (info.description and info.description ~= "") then
+					tooltip:AddLine(" ")
+				end
+				tooltip:AddLine(info.friendText, nil, nil, nil, true)
+			end
+			tooltip:AddLine(" ")
+			tooltip:AddLine(Colors.WHITE .. "[BrokerAnything]")
+			if (info.repType == "paragon") then
+				tooltip:AddLine(Colors.WHITE .. L[" - Paragom Reputation - "])
+			end
+			if (info.hasRewardPending) then
+				tooltip:AddLine(L["Has Reward Pending!"])
+			end
+			local breakUpLargeNumbers = module.db.profile.ids[factionId].breakUpLargeNumbers
+			tooltip:AddDoubleLine(L["Standing:"], info.color .. info.standingText)
+			local current = BrokerAnything:FormatNumber(info.currentValue, breakUpLargeNumbers)
+			local currentMax = BrokerAnything:FormatNumber(info.currentMax, breakUpLargeNumbers)
+			tooltip:AddDoubleLine(L["Reputation:"], info.color .. current .. "/" .. currentMax)
+			local balanceText = BrokerAnything:FormatBalance(info.balance, true, breakUpLargeNumbers)
+			if (info.balanceLevel and info.balanceLevel > 0) then
+				balanceText = balanceText .. Colors.WHITE .." (+" .. Colors.GREEN .. info.balanceLevel .. Colors.WHITE .. ")"
+			end
+			tooltip:AddDoubleLine(L["This session:"], balanceText)
+			if (info.canToggleAtWar) then
+				tooltip:AddDoubleLine(L["At war:"], BrokerAnything:FormatBoolean(info.atWarWith))
+			end
+
+			tooltip:Show()
+		end,
+		OnClick = BrokerAnything:CreateOnClick(
+				function(_, button)
+					if button == "LeftButton" then
+						BrokerAnything:OpenConfigDialog({ "reputation", tostring(factionId) })
+					elseif button == "RightButton" then
+						return BrokerAnything:CreateMenu(configVariables, module.db, "ids", factionId, module.OnOptionChanged)
 					end
-					tooltip:AddLine(info.friendText, nil, nil, nil, true)
 				end
-				tooltip:AddLine(" ")
-				tooltip:AddLine(Colors.WHITE .. "[BrokerAnything]")
-				if (info.repType == "paragon") then
-					tooltip:AddLine(Colors.WHITE .. L[" - Paragom Reputation - "])
-				end
-				if (info.hasRewardPending) then
-					tooltip:AddLine(L["Has Reward Pending!"])
-				end
-				local breakUpLargeNumbers = module.db.profile.ids[factionId].breakUpLargeNumbers
-				tooltip:AddDoubleLine(L["Standing:"], info.color .. info.standingText)
-				local current = BrokerAnything:FormatNumber(info.currentValue, breakUpLargeNumbers)
-				local currentMax = BrokerAnything:FormatNumber(info.currentMax, breakUpLargeNumbers)
-				tooltip:AddDoubleLine(L["Reputation:"], info.color .. current .. "/" .. currentMax)
-				tooltip:AddDoubleLine(L["This session:"], BrokerAnything:FormatBalance(info.balance, true, breakUpLargeNumbers))
-				if (info.canToggleAtWar) then
-					tooltip:AddDoubleLine(L["At war:"], BrokerAnything:FormatBoolean(info.atWarWith))
-				end
-
-				tooltip:Show()
-			end,
-			OnClick = BrokerAnything:CreateOnClick(
-					function(_, button)
-						if button == "LeftButton" then
-							BrokerAnything:OpenConfigDialog({ "reputation", tostring(factionId) })
-						elseif button == "RightButton" then
-							return BrokerAnything:CreateMenu(configVariables, module.db, "ids", factionId, module.OnOptionChanged)
-						end
-					end
-			),
-			tocname = ADDON_NAME
-		})
-	}
+		),
+		tocname = ADDON_NAME
+	})
 
 	if (not brokerTable.broker) then
 		brokerTable.broker = LibStub("LibDataBroker-1.1"):GetDataObjectByName(brokerName)
@@ -358,22 +360,45 @@ function module:AddBroker(factionId)
 	module:UpdateBroker(brokerTable)
 end
 
+function module:InitSessionBalanceRep(table, repBarValue, rankingCurrent)
+	if (not table.sessionStart) then
+		table.sessionStart = {}
+	end
+	if not table.sessionStart.startRep then
+		table.sessionStart.startRep = repBarValue
+	end
+	if not table.sessionStart.startRanking then
+		table.sessionStart.startRanking = rankingCurrent
+	end
+	return table
+end
+
 function module:GetSessionBalanceRep(factionId, repBarValue)
 	if not brokers[factionId] then
-		return 0
+		return 0, 0
 	end
-	if ((brokers[factionId].sessionStart or 0) == 0) then
-		brokers[factionId].sessionStart = repBarValue
+	local rankingCurrent = GetFriendshipReputationRanks(factionId)
+	module:InitSessionBalanceRep(brokers[factionId], repBarValue, rankingCurrent)
+	local sessionRanking = 0
+	if (rankingCurrent and brokers[factionId].sessionStart.startRanking) then
+		sessionRanking = rankingCurrent - brokers[factionId].sessionStart.startRanking
 	end
-	return repBarValue - brokers[factionId].sessionStart
+	return repBarValue - brokers[factionId].sessionStart.startRep, sessionRanking
+end
+
+function module:InitSessionMajorFaction(table, data)
+	local isCapped = HasMaximumRenown(data.factionID)
+	local current = isCapped and data.renownLevelThreshold or data.renownReputationEarned or 0
+	table.sessionStart = {
+		startLvl = data.renownLevel,
+		[data.renownLevel] = { start = current, max = data.renownLevelThreshold }
+	}
+	return table
 end
 
 function module:GetSessionBalanceMajorFaction(factionId, data)
 	if (not brokers[factionId].sessionStart) then
-		brokers[factionId].sessionStart = {
-			startLvl = data.renownLevel,
-			[data.renownLevel] = { start = 0, max = data.renownLevelThreshold }
-		}
+		module:InitSessionMajorFaction(brokers[factionId], data)
 	end
 	local balance = 0
 	local start = brokers[factionId].sessionStart.startLvl
@@ -387,7 +412,7 @@ function module:GetSessionBalanceMajorFaction(factionId, data)
 			balance = balance + (endXp - saved.start)
 		end
 	end
-	return balance
+	return balance, currentLvl - start
 end
 
 local function GetStandingIdText(standingId)
@@ -401,9 +426,9 @@ function module:GetStandardizeValues(standingId, barValue, bottomValue, topValue
 		local isCapped = HasMaximumRenown(factionId)
 		local current = isCapped and data.renownLevelThreshold or data.renownReputationEarned or 0
 		local standingText = (RENOWN_LEVEL_LABEL .. data.renownLevel)
-		local session = module:GetSessionBalanceMajorFaction(factionId, data)
+		local session, sessionRanking = module:GetSessionBalanceMajorFaction(factionId, data)
 		local hasRewardPending = IsFactionParagon(factionId) and select(4, C_Reputation.GetFactionParagonInfo(factionId))
-		return current, data.renownLevelThreshold, color, standingText, hasRewardPending, session, "major", nil, true
+		return current, data.renownLevelThreshold, color, standingText, hasRewardPending, session, "major", nil, true, sessionRanking
 	end
 
 	if (standingId == nil) then
@@ -417,8 +442,8 @@ function module:GetStandardizeValues(standingId, barValue, bottomValue, topValue
 		if hasRewardPending then
 			standingText = standingText .. "*"
 		end
-		local session = module:GetSessionBalanceRep(factionId, barValue)
-		return mod(currentValue, threshold), threshold, color, standingText, hasRewardPending, session, "paragon", nil, true
+		local session, sessionRanking = module:GetSessionBalanceRep(factionId, barValue)
+		return mod(currentValue, threshold), threshold, color, standingText, hasRewardPending, session, "paragon", nil, true, sessionRanking
 	end
 
 	local friendID, friendRep, _, _, friendText, _, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionId)
@@ -429,16 +454,16 @@ function module:GetStandardizeValues(standingId, barValue, bottomValue, topValue
 		if (nextFriendThreshold) then
 			max, current = nextFriendThreshold - friendThreshold, friendRep - friendThreshold
 		end
-		local session = module:GetSessionBalanceRep(factionId, friendRep)
-		return current, max, color, standingText, nil, session, "friend", friendText, true
+		local session, sessionRanking = module:GetSessionBalanceRep(factionId, friendRep)
+		return current, max, color, standingText, nil, session, "friend", friendText, true, sessionRanking
 	end
 
 	local color = getStandColor(standingId)
 	local standingText = GetStandingIdText(standingId)
 	local current = barValue - bottomValue
 	local max = topValue - bottomValue
-	local session = module:GetSessionBalanceRep(factionId, barValue)
-	return current, max, color, standingText, nil, session, "reputation", nil, nil, false
+	local session, sessionRanking = module:GetSessionBalanceRep(factionId, barValue)
+	return current, max, color, standingText, nil, session, "reputation", nil, nil, false, sessionRanking
 end
 
 function module:GetRepInfo(factionId)
@@ -447,7 +472,7 @@ function module:GetRepInfo(factionId)
 		return nil
 	end
 
-	local value, max, color, standingText, hasRewardPending, balance, repType, friendText, isRenown = module:GetStandardizeValues(
+	local value, max, color, standingText, hasRewardPending, balance, repType, friendText, isRenown, sessionRanking = module:GetStandardizeValues(
 			standingID, barValue, bottomValue, topValue, factionId
 	)
 
@@ -461,6 +486,7 @@ function module:GetRepInfo(factionId)
 		standingText = standingText,
 		hasRewardPending = hasRewardPending,
 		balance = balance,
+		balanceLevel = sessionRanking,
 		repType = repType,
 		atWarWith = atWarWith,
 		canToggleAtWar = canToggleAtWar,
@@ -510,6 +536,9 @@ function module:GetButtonText(factionId)
 	local showBalance = module.db.profile.ids[factionId].showBalance
 	if showBalance and info.balance > 0 then
 		text = text .. BrokerAnything:FormatBalance(info.balance, nil, breakUpLargeNumbers)
+		if (info.balanceLevel and info.balanceLevel > 0) then
+			text = text .. Colors.WHITE .." (+" .. Colors.GREEN .. info.balanceLevel .. Colors.WHITE .. ")"
+		end
 	end
 
 	return text
