@@ -2,4 +2,5 @@
 ..\FrameXML\UI.xsd">
 	<Script file="LibAdvancedIconSelector-Eliote.lua"/>
 	<Script file="LibAdvancedIconSelector-EditBox-Widget.lua"/>
+	<Include file="LAISIconButtonTemplate.xml"/>
 </Ui>

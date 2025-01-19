@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibAdvancedIconSelector-Eliote"
-local MINOR_VERSION = 5
+local MINOR_VERSION = 6
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub to operate") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -667,7 +667,7 @@ function IconSelectorFrame.private_OnInternalFrameSizeChanged(internalFrame, wid
 			-- Create the button if it doesn't exist (but don't set its normal texture yet)
 			local button = parent.icons[i]
 			if not button then
-				button = CreateFrame("CheckButton", format(widgetName .. "_MTAISButton%d", i), parent.internalFrame, "GearSetPopupButtonTemplate")
+				button = CreateFrame("CheckButton", format(widgetName .. "_MTAISButton%d", i), parent.internalFrame, "LAISIconButtonTemplate")
 				button.icon = button.Icon or _G[widgetName .. format("_MTAISButton%dIcon", i)]
 				parent.icons[i] = button
 				button:SetSize(36, 36)
