@@ -189,7 +189,7 @@ function module:OnEnable()
 
 	self:RegisterEvent('UPDATE_FACTION')
 
-	if (C_Reputation.IsMajorFaction) then
+	if (C_Reputation.IsMajorFaction and LE_EXPANSION_LEVEL_CURRENT >= 9) then
 		self:RegisterEvent('MAJOR_FACTION_RENOWN_LEVEL_CHANGED')
 	end
 end
