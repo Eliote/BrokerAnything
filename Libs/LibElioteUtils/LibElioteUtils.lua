@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibElioteUtils-1.0", 1
+local MAJOR, MINOR = "LibElioteUtils-1.0", 2
 ---@class ElioteUtils
 local ElioteUtils, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
@@ -43,7 +43,7 @@ function ElioteUtils.getId(itemLinkOrId)
 	if not itemLinkOrId then return end
 	if (tonumber(itemLinkOrId)) then return itemLinkOrId end
 
-	local _, _, _, _, id = string.find(itemLinkOrId, "|?c?f?f?(%x*)|?H?([^:]*):?(%d+):?(%d*):?(%d*):?(%d*):?(%d*):?(%d*):?(%-?%d*):?(%-?%d*):?(%d*):?(%d*)|?h?%[?([^%[%]]*)%]?|?h?|?r?")
+	local id = itemLinkOrId:match("|H.-:(%d+)")
 
 	return tonumber(id)
 end
