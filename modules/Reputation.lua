@@ -425,7 +425,7 @@ function module:GetStandardizeValues(standingId, barValue, bottomValue, topValue
 		local data = GetMajorFactionData(factionId)
 		local isCapped = HasMaximumRenown(factionId)
 		local current = isCapped and data.renownLevelThreshold or data.renownReputationEarned or 0
-		local standingText = (RENOWN_LEVEL_LABEL .. data.renownLevel)
+		local standingText = RENOWN_LEVEL_LABEL:format(data.renownLevel)
 		local session, sessionRanking = module:GetSessionBalanceMajorFaction(factionId, data)
 		local hasRewardPending = IsFactionParagon(factionId) and select(4, C_Reputation.GetFactionParagonInfo(factionId))
 		return current, data.renownLevelThreshold, color, standingText, hasRewardPending, session, "major", nil, true, sessionRanking
